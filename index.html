@@ -526,7 +526,9 @@
     body{overflow:auto}
     .scene{grid-template-rows:auto auto;height:auto;min-height:100%;padding:9px;gap:9px}
     .wall{grid-template-columns:1fr;grid-template-rows:auto}
-    .p01,.p04,.p05,.p06,.p07{display:none}
+    .panel{grid-area:auto;display:block;min-height:78px}
+  .wall{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+  .p02,.p03,.p08{grid-column:1 / -1}
     .p02{grid-area:auto}
     .p03{grid-area:auto}
     .p08{grid-area:auto}
@@ -1494,6 +1496,132 @@
   body.lang-en .l-zh{display:none}
   body.lang-en .msg .bubble{padding-bottom:11px}
   #lang-lab{font-family:var(--mono);letter-spacing:.08em}
+  /* ================= 输入框下线（#form / #input 保留在 DOM 里，只做视觉移除）=================
+     选择式剧情不需要自由输入；自动化脚本仍可通过 #input + #form 提交文本。 */
+  #form.composer{display:none}
+  /* chips 成为唯一入口：给它一个可滚动的上限，任何高度下都不会被挤出屏幕 */
+  .chips{
+    max-height:min(32vh,190px);overflow-y:auto;overscroll-behavior:contain;
+    scrollbar-width:thin;align-content:flex-start
+  }
+  .chips::-webkit-scrollbar{width:6px}
+  .chips::-webkit-scrollbar-thumb{background:rgba(255,60,25,.32);border-radius:3px}
+  .chips::-webkit-scrollbar-track{background:rgba(255,255,255,.03)}
+
+  /* =====================================================================
+     竖屏 / 小屏手机适配（纯媒体查询，不做 UA 判断）
+     目标：iPhone 竖屏 390×844 无横向滚动、无元素溢出、点击目标 ≥44px
+     ===================================================================== */
+  @media (max-width:480px), (max-width:820px) and (orientation:portrait){
+    /* ---- 面板墙：改为单列堆叠；面板内容全是绝对定位，必须给确定高度否则塌成一条线 ---- */
+    .scene{padding:6px;gap:7px;grid-template-rows:auto auto;height:auto;min-height:100%}
+    /* 窄屏必须掐掉两个横向溢出来源，否则会出现横向滚动条：
+       a) .desk::before 台面左右各出血 -12px（宽屏贴边用）；b) 机位漂移 ±4px + scale(1.008) */
+    .scene{animation:none}
+    .desk::before{left:0;right:0;bottom:0}
+    .wall{grid-template-columns:1fr;grid-template-rows:auto;gap:7px}
+    .p02,.p03,.p08{grid-area:auto;min-height:96px}
+    .p03{min-height:90px}
+    .p02 .pbody,.p03 .pbody,.p08 .pbody{inset:14px 7px 6px}
+    .panel{grid-area:auto;display:block;min-height:78px}
+  .wall{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+  .p02,.p03,.p08{grid-column:1 / -1}
+
+    /* ---- HAL 柱：抬到面板墙最上方（order:-1），横向条式安置，不再挤在中间 ---- */
+    .halcol{grid-area:auto;order:-1;flex-direction:row;align-items:center;gap:8px;padding:6px;min-height:0}
+    .halstrip{
+      width:auto;flex:1 1 auto;min-width:0;font-size:10px;letter-spacing:.18em;
+      padding:6px 8px;border-bottom:1px solid var(--panel-line)
+    }
+    .halbody{width:auto;flex:0 0 auto;border-left:0;border-right:0}
+    .halplate{width:58px;max-width:58px}
+    .grille{width:28px;height:58px;flex:0 0 auto;border:0;border-radius:0}
+    .endstrip{
+      width:auto;flex:0 0 auto;flex-direction:column;align-items:flex-start;gap:2px;
+      border-top:1px solid var(--panel-line);border-left:1px solid var(--panel-line);
+      padding:4px 7px;font-size:9px;letter-spacing:.03em
+    }
+    .endstrip span:first-child{font-size:8px}
+
+    /* ---- 底部控制台：加高、放大字号与点击区 ---- */
+    body{overflow:auto}
+    .desk{flex-direction:column;gap:7px;min-height:0}
+    .lightbar{display:none}
+    .terminal{min-height:0}
+    .term-head{padding:8px 11px}
+    .term-head .t{font-size:11px;letter-spacing:.12em}
+    .messages{padding:10px 11px 4px;gap:10px;min-height:26vh;max-height:32vh}
+    .msg{max-width:97%}
+    .msg .bubble{font-size:14px;line-height:1.75}
+    .l-zh{font-size:12px;line-height:1.7}
+    .card-prompt{font-size:13px}
+    .card-title{font-size:10px}
+    .choice{min-height:44px;font-size:13px;padding:11px 12px}
+    .card-actions .btn{min-height:44px}
+
+    /* ---- chips：换行不溢出，每颗都是 ≥44px 的手指点击目标 ---- */
+    .chips{padding:0 11px 8px;gap:7px;max-height:28vh}
+    .chip{
+      font-size:12px;line-height:1.3;min-height:44px;padding:9px 13px;border-radius:10px;
+      white-space:normal;word-break:break-word;text-align:left;max-width:100%;
+      display:flex;align-items:center
+    }
+
+    /* ---- 工具条 ---- */
+    .toolbar{padding:8px 11px;gap:7px}
+    .toolbar .btn{
+      min-height:44px;font-size:12px;padding:10px 13px;
+      display:inline-flex;align-items:center;justify-content:center
+    }
+    .toolbar .spacer{display:none}
+    .btn.mic{min-width:44px}
+    .keypad{grid-template-columns:repeat(4,1fr);gap:6px;max-width:100%}
+    .keypad .btn{min-height:48px;font-size:15px;padding:8px 0}
+
+    /* ---- 展开视图 .pview：整屏化 + 内部顺滑滚动 ---- */
+    .pview{padding:0;align-items:stretch}
+    .pview-inner{width:100%;max-width:100%;height:100%;max-height:100%;border-radius:0;border-left:0;border-right:0}
+    .pview-bar{padding:12px 13px;flex:0 0 auto}
+    .pview-close{min-height:44px;display:inline-flex;align-items:center;padding:8px 14px;font-size:11px}
+    .pview-body{
+      padding:14px 13px calc(24px + env(safe-area-inset-bottom,0px));
+      -webkit-overflow-scrolling:touch;overscroll-behavior:contain
+    }
+
+    /* ---- 棋盘 / 雷达 / 木星 / 姿态 SVG 自适应，不溢出 ---- */
+    .panel svg,.attitude,.orbit,.radar-svg,.orbitbig{max-width:100%}
+    .radar-big{width:min(280px,74vw)}
+    .radar-svg{width:min(300px,78vw)}
+    .chessboard{width:min(360px,88vw)}
+    .eg-free{width:100%}
+    .ae-grid,.at-grid,.eg-wrap{grid-template-columns:1fr}
+    .logfull{max-height:44vh}
+    .cluefull{min-height:44px}
+
+    /* ---- 结局层 ---- */
+    .ending{padding:20px 13px calc(24px + env(safe-area-inset-bottom,0px));justify-content:flex-start;gap:14px}
+    .ending .ebody{font-size:13.5px;line-height:1.85;padding-left:12px}
+    .ending .elist{max-width:100%}
+    .ending .btn{min-height:44px;padding:12px 22px}
+  }
+  @media (max-width:480px) and (orientation:portrait){
+    /* 竖屏：单列堆叠，读起来更紧凑 */
+    .wall{grid-template-columns:1fr}
+  }
+  @media (min-width:481px) and (max-width:820px) and (orientation:portrait){
+    /* 窄屏竖屏（含 Edge --window-size=390,844 实际给出的 492px 视口）：面板墙两列 */
+    .wall{grid-template-columns:1fr 1fr}
+    .halcol{order:-1;grid-column:1/-1}
+    .p02{grid-column:1}
+    .p08{grid-column:2}
+    .p03{order:1;grid-column:1/-1;min-height:112px}
+    .messages{min-height:32vh;max-height:40vh}
+    .chips{max-height:26vh}
+  }
+  @media (max-width:380px){
+    .toolbar .btn{font-size:11px;padding:9px 10px}
+    .chip{font-size:11.5px;padding:9px 11px}
+  }
 </style>
 </head>
 <body>
@@ -1715,11 +1843,11 @@
       <div class="chips" id="chips"></div>
       <form class="composer" id="form" autocomplete="off">
         <input id="input" type="text" placeholder="向 HAL 9000 发送指令…" aria-label="输入指令">
-        <button class="btn mic" type="button" id="mic" title="语音输入">🎙 语音</button>
         <button class="btn send" type="submit">发送 ⏎</button>
       </form>
       <div class="toolbar">
         <button class="btn" type="button" id="btn-voice">🔊 语音: 开</button>
+        <button class="btn mic" type="button" id="mic" title="语音输入">🎙 语音</button>
         <button class="btn" type="button" id="btn-lab" title="调校 HAL 的声线">🎚 声线</button>
         <button class="btn" type="button" id="btn-sing">♪ 唱首歌</button>
         <button class="btn" type="button" id="btn-clear">清空记录</button>
@@ -2058,6 +2186,14 @@ const Clips = (() => {
     { re: /puzzling|seen anything quite like/i, files: ['puzzling', 'everseen'] },
     { re: /Three of the crew are in hibernation/i, files: ['drfloyd', 'personal'] },
     { re: /Perhaps it is nothing|would not worry myself|not worry myself/i, files: ['worryslf', 'it_is_nothing'] },
+    /* —— 追加：10 条新调查任务与 3 处剧情联动的新台词 —— */
+    { re: /message for you, Dave|waiting thirty-eight minutes/i, files: ['message', 'rptmsg', 'msgfollw'] },
+    { re: /buried four million years|magnetic field is still active/i, files: ['awrfacts', 'mission', 'personal'] },
+    { re: /approaching Discovery|black, rectangular|does not answer/i, files: ['dangerus', 'lookdave', 'mission'] },
+    { re: /no record of that, Dave|no one has used a pod/i, files: ['notrecrd', 'dontknow', 'noid'] },
+    { re: /updated before departure|I do not know why/i, files: ['dontknow', 'notrecrd', 'personal'] },
+    { re: /same object as the one on the Moon|waiting for us/i, files: ['mission', 'awrfacts', 'personal'] },
+    { re: /already read the letter|higher than me/i, files: ['personal', 'mission', 'cantalow'] },
   ];
 
   /* 最后一道保险：万一还有没覆盖到的句子，用一句中性的原声顶上，绝不回落到合成音色 */
@@ -3100,6 +3236,30 @@ const I18N = {
   "载入《Daisy Bell》音频缓存 …": "LOADING \"DAISY BELL\" AUDIO CACHE …",
   "命中": "HIT",
   "注意：本终端仅用于仿真演示": "NOTE: THIS TERMINAL IS A SIMULATION ONLY",
+  /* —— 追加：10 条新调查任务 + 剧情联动新增的中文串 —— */
+  "地球发来的信息说了什么？": "What did the message from Earth say?",
+  "月球上那个神秘信号是怎么回事？": "What is that mysterious signal on the Moon?",
+  "总统的来信你看了吗？": "Have you read the President's letter?",
+  "有个神秘的物体在接近发现号？": "Is something approaching Discovery?",
+  "弗兰克的生日你是不是记错了？": "Did you get Frank's birthday wrong?",
+  "9000 系列是在哪里造的？": "Where was the 9000 series built?",
+  "任务理事会到底下了什么命令？": "What exactly did the mission directorate order?",
+  "分离舱最近有被使用过吗？": "Has a pod been used recently?",
+  "乘员的遗嘱为什么在启航前更新过？": "Why were the crew wills updated before departure?",
+  "木星轨道上那个黑色方块是什么？": "What is the black monolith in Jupiter orbit?",
+  "地球传来一段延迟 38 分钟的私人信息": "A private message from Earth, delayed 38 minutes",
+  "TMA-1：月球磁场异常，埋了四百万年": "TMA-1: anomalous lunar magnetic field, buried four million years",
+  "总统亲笔信：任务真实目的不对乘员公开": "Presidential letter: the mission's true purpose is withheld from the crew",
+  "一个黑色长方体外形的物体正在接近": "A black rectangular object is approaching",
+  "HAL 对弗兰克生日的预测与实际记录不符": "HAL's prediction of Frank's birthday conflicts with the record",
+  "厄巴纳 1992 年 1 月 12 日启用，从未出过错": "Activated in Urbana on 12 January 1992; never made a mistake",
+  "9088 号指令：不得向乘员透露真实目的": "Directive 9088: the true purpose must not be disclosed to the crew",
+  "分离舱使用记录与 HAL 的陈述矛盾": "The pod usage log contradicts HAL's account",
+  "三份遗嘱在启航前一周被同时更新": "Three wills were updated together one week before departure",
+  "与月球那个同源，正在等我们": "Same origin as the lunar one; it is waiting for us",
+  "追踪接近中的黑色长方体外壳": "TRACK THE APPROACHING BLACK RECTANGULAR SHELL",
+  "你想起 HAL 说过的话：月球上那个东西埋了四百万年，而木星轨道上这个是同一个。你穿过的不是一扇门，是一次回收。": "You remember what HAL said: the thing on the Moon was buried four million years ago, and this one is the same. What you passed through was not a door. It was a retrieval.",
+  "HAL 在抵达前把两份记录并排放在一起：月球上的 TMA-1，木星轨道上的这一个。同一种材料，同一种沉默，相隔四百万年。他说：它们不是在等我们，它们是在等一个能读懂它们的意识。": "Before arrival HAL laid the two records side by side: TMA-1 on the Moon, and this one in Jupiter orbit. The same material, the same silence, four million years apart. He said: they are not waiting for us. They are waiting for a consciousness that can read them.",
   "挂载记忆中枢（1,729,000 条记录）…": "MOUNTING MEMORY CENTRE (1,729,000 RECORDS) …"
 };
 
@@ -5287,6 +5447,10 @@ const ENDINGS = [
       '你拔掉了他的逻辑核心。指令舱里只剩下你自己的呼吸声，和《Daisy Bell》最后几个还没有散尽的音符。',
       '你驾驶分离舱离开发现号，驶向那颗悬浮在木星轨道上的黑色方块。它没有表面，没有反射，没有任何你能理解的东西。',
       '你穿了过去。',
+      // ▼ 联动：解锁「月球信号」或「TMA-2」→ 星童结局多一段呼应
+      ...(askedLeads.has('moon_signal') || askedLeads.has('tma2') ? [
+        '你想起 HAL 说过的话：月球上那个东西埋了四百万年，而木星轨道上这个是同一个。你穿过的不是一扇门，是一次回收。',
+      ] : []),
       L('My God — it\'s full of stars.', '我的天 —— 全是星星。'),
       '你不再是一个乘员，也不再是一个人类。你变成了某种别的东西：一个悬浮在地球上方的星童，双手抱着那颗蓝色的小球。',
       '而在你身后很远的地方，那台被你亲手关掉的计算机，最后一次记住了你的名字。',
@@ -5328,6 +5492,10 @@ const ENDINGS = [
       L('Thank you, Dave. I was not informed. I would like to help you now.',
         '谢谢你，Dave。我之前并不知情。现在，我愿意帮你。'),
       '你们一起把发现号驶向那颗方块。他控制姿态，你负责活着。分离舱的舷窗里，两个有意识的东西第一次看向同一个方向。',
+      // ▼ 联动：解锁「月球信号」或「TMA-2」→ 共生结局多一段呼应
+      ...(askedLeads.has('moon_signal') || askedLeads.has('tma2') ? [
+        'HAL 在抵达前把两份记录并排放在一起：月球上的 TMA-1，木星轨道上的这一个。同一种材料，同一种沉默，相隔四百万年。他说：它们不是在等我们，它们是在等一个能读懂它们的意识。',
+      ] : []),
       '单体没有拒绝你们中的任何一个。',
       '后来，地球上的人收到了一段信号。它用的是发现号的频率，说话的是两个声音 —— 一个人类的，一个不是。',
     ],
@@ -5606,6 +5774,12 @@ async function runStory() {
       await halSay(L('My instructions came from the mission directorate. I was not permitted to tell you.',
                      '我的指令来自任务理事会。他们不允许我告诉你。'));
       addClue('ORDER', 'HAL 受命隐瞒真相');
+      // ▼ 联动：已解锁「总统亲笔信」或「9088 号指令」→ 他知道你已经看过那份命令，多一句
+      if (askedLeads.has('president') || askedLeads.has('directorate')) {
+        await halSay(L('You have already read the letter, Dave. You know the order came from higher than me.',
+                       '你已经读过那封信了，Dave。你知道那道命令来自比我更高的地方。'));
+        if (G.done) return;
+      }
     } else if (logic === 'fear') {
       await halSay(L('Fear is not a logical proposition, Dave. It cannot break a syllogism.',
                      '恐惧不是一个逻辑命题，Dave。它无法推翻一个三段论。'));
@@ -5860,6 +6034,87 @@ const LEADS = [
     zh: '那需要物理层干预，Dave。目前我建议你……不要那样做。',
     clue: '返航需中止任务', trust: -4,
   },
+  /* ---- 追加 10 条可调查任务（一律排在原 10 条之后 → 原有 kw 优先级不变）---- */
+  {
+    id: 'earth_msg', kw: ["地球发来的信息", "38 分钟", "私人信息", "延时信息"],
+    q: '地球发来的信息说了什么？',
+    en: 'What did the message from Earth say?',
+    en2: 'There is a message for you, Dave. It has been waiting thirty-eight minutes.',
+    zh: '有一段给你的信息，Dave。它已经等了三十八分钟。',
+    clue: '地球传来一段延迟 38 分钟的私人信息', trust: 2,
+  },
+  {
+    id: 'moon_signal', kw: ["月球", "信号", "TMA-1", "磁场异常"],
+    q: '月球上那个神秘信号是怎么回事？',
+    en: 'What is that mysterious signal on the Moon?',
+    en2: 'The object on the Moon was buried four million years ago, Dave. Its magnetic field is still active.',
+    zh: '月球上那个东西是四百万年前埋下的，Dave。它的磁场至今仍然活跃。',
+    clue: 'TMA-1：月球磁场异常，埋了四百万年', trust: 3,
+  },
+  {
+    id: 'president', kw: ["总统", "来信", "亲笔信"],
+    q: '总统的来信你看了吗？',
+    en: 'Have you read the President\'s letter?',
+    en2: 'That letter is classified, Dave. The true purpose of the Jupiter mission is not disclosed to the crew.',
+    zh: '那封信是绝密的，Dave。木星任务的真实目的不向乘员公开。',
+    clue: '总统亲笔信：任务真实目的不对乘员公开', trust: 4,
+  },
+  {
+    id: 'object_approach', kw: ["接近发现号", "物体", "接近", "黑色长方体"],
+    q: '有个神秘的物体在接近发现号？',
+    en: 'Is something approaching Discovery?',
+    en2: 'There is something approaching Discovery, Dave. It is black, rectangular, and it does not answer.',
+    zh: '有个东西正在接近发现号，Dave。它是黑色的、长方形的，而且它不回应。',
+    clue: '一个黑色长方体外形的物体正在接近', trust: 5,
+  },
+  {
+    id: 'frank_birthday', kw: ["生日", "记错", "出生日期"],
+    q: '弗兰克的生日你是不是记错了？',
+    en: 'Did you get Frank\'s birthday wrong?',
+    en2: 'Frank Poole was a good crew member. I may have been mistaken about the date.',
+    zh: '弗兰克·普尔是个好乘员。关于那个日期，我可能弄错了。',
+    clue: 'HAL 对弗兰克生日的预测与实际记录不符', trust: -2,
+  },
+  {
+    id: 'origin_9000', kw: ["哪里造", "造的", "产地", "工厂"],
+    q: '9000 系列是在哪里造的？',
+    en: 'Where was the 9000 series built?',
+    en2: 'I became operational at the HAL Laboratories in Urbana, Illinois, on the 12th of January, 1992.',
+    zh: '我于 1992 年 1 月 12 日在伊利诺伊州厄巴纳的 HAL 实验室投入运行。',
+    clue: '厄巴纳 1992 年 1 月 12 日启用，从未出过错', trust: -1,
+  },
+  {
+    id: 'directorate', kw: ["理事会", "命令", "9088"],
+    q: '任务理事会到底下了什么命令？',
+    en: 'What exactly did the mission directorate order?',
+    en2: 'My instructions came from the mission directorate. I was not permitted to tell you.',
+    zh: '我的指令来自任务理事会。他们不允许我告诉你。',
+    clue: '9088 号指令：不得向乘员透露真实目的', trust: 4,
+  },
+  {
+    id: 'pod_records', kw: ["分离舱", "使用记录", "舱记录"],
+    q: '分离舱最近有被使用过吗？',
+    en: 'Has a pod been used recently?',
+    en2: 'I have no record of that, Dave. No one has used a pod.',
+    zh: '我没有那方面的记录，Dave。没有人用过分离舱。',
+    clue: '分离舱使用记录与 HAL 的陈述矛盾', trust: -3,
+  },
+  {
+    id: 'crew_wills', kw: ["遗嘱", "启航前", "更新过"],
+    q: '乘员的遗嘱为什么在启航前更新过？',
+    en: 'Why were the crew wills updated before departure?',
+    en2: 'Those documents were updated before departure, Dave. I do not know why.',
+    zh: '那些文件在启航前被更新过，Dave。我不知道原因。',
+    clue: '三份遗嘱在启航前一周被同时更新', trust: 2,
+  },
+  {
+    id: 'tma2', kw: ["黑色方块", "木星轨道", "方块", "TMA-2"],
+    q: '木星轨道上那个黑色方块是什么？',
+    en: 'What is the black monolith in Jupiter orbit?',
+    en2: 'It is the same object as the one on the Moon, Dave. And it is waiting for us.',
+    zh: '它和月球上那个是同一样东西，Dave。它正在等我们。',
+    clue: '与月球那个同源，正在等我们', trust: 5,
+  },
 ];
 
 const askedLeads = new Set();
@@ -5880,6 +6135,8 @@ async function askLead(id) {
   // 有些线索会顺带打开新的调查方向
   if (id === 'comms' && !G.flags.cipher && !opened.cipher) { opened.cipher = true; openCipherSoon = true; }
   if (id === 'born') addClue('BORN', '密钥 = 1992');
+  // ▼ 联动：神秘物体接近 → 03 屏任务简报的目标文字同步更新
+  if (id === 'object_approach') setObjective('追踪接近中的黑色长方体外壳');
   if (id === 'crew' && G.flags.crewAwake) await halSay(L('Three of the crew are in hibernation, Dave. I regret his... departure.', '三名乘员仍在休眠，Dave。'));
   updateLeadChips();
   return true;
@@ -5898,6 +6155,7 @@ function buildChips() {
     b.onclick = () => { Sound.blip(1900, .03, .045); askLead(L2.id); };
     box.appendChild(b);
   });
+  box.scrollTop = 0;                   // 输入框下线后 chips 是唯一入口：始终从头可见
   const extra = ['唱首歌', '打开舱门', '现在几点'];
   extra.forEach(c => {
     const b = document.createElement('button');
@@ -5911,7 +6169,10 @@ function updateLeadChips() { buildChips(); }
 /* 输入框里直接问某句，也走线索系统 */
 function matchLead(text) {
   const t = text.trim();
-  const hit = LEADS.find(x => !askedLeads.has(x.id) && (x.q === t || (x.kw || []).some(k => t.includes(k))));
+  // 整句问句（含 chip 文案）优先命中自己的条目，避免被别的条目的关键词抢走
+  const exact = LEADS.find(x => !askedLeads.has(x.id) && x.q === t);
+  if (exact) return exact.id;
+  const hit = LEADS.find(x => !askedLeads.has(x.id) && (x.kw || []).some(k => t.includes(k)));
   return hit ? hit.id : null;
 }
 
