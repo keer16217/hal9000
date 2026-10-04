@@ -1676,6 +1676,16 @@
     background:linear-gradient(180deg,rgba(40,14,8,.5),rgba(6,8,11,.6));
   }
   .earth-letter .card-note{margin-top:6px}
+  /* 确认阅读完毕：操作区在信件正文下方，按钮触摸目标 ≥44px（竖屏 390px 也要够大） */
+  .earth-letter .letter-actions{margin-top:12px;padding-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    border-top:1px solid rgba(255,90,50,.22)}
+  .earth-letter .btn-confirm{min-height:44px;min-width:148px;padding:11px 16px;font-family:inherit;font-size:12px;
+    letter-spacing:.06em;line-height:1.2;color:#ffd7c8;cursor:pointer;
+    background:linear-gradient(180deg,rgba(74,22,12,.85),rgba(22,8,6,.92));
+    border:1px solid rgba(255,110,70,.6);border-radius:3px}
+  .earth-letter .btn-confirm:hover:not([disabled]){border-color:rgba(255,152,112,.95);color:#ffe9e0}
+  .earth-letter .btn-confirm[disabled]{color:#9c8d88;border-color:rgba(150,120,110,.38);cursor:default;opacity:.9}
+  .earth-letter .btn-confirm[data-confirmed="1"]::before{content:"✓ ";color:#8fe0a8}
   @media (max-width:480px){
     .hl-tag .hl-en{font-size:9.5px}
     .hl-tag .hl-zh{font-size:9px}
@@ -3419,7 +3429,12 @@ const I18N = {
   "你什么都没做，也没有问过任何一件事": "you did nothing, and never asked a single question",
   "在没有前提的情况下要求他合作": "asked for his cooperation with no ground for it",
   "下行链路：接收到地面签发的 9400 授权码": "Downlink: authorisation code 9400 received, issued from the ground",
-  "当场读出来": "Read it out now"
+  "当场读出来": "Read it out now",
+  /* —— 地球来信「确认阅读完毕」按钮 / 确认后的目标与日志 —— */
+  "确认阅读完毕": "Confirm reading complete",
+  "已确认阅读": "Reading confirmed",
+  "按地球的警告行事": "ACT ON EARTH'S WARNING",
+  "舰载日志：乘员已确认阅读地球来信": "SHIP LOG: crew confirmed the message from Earth was read"
 };
 
 /* 拼接出来的动态句（sysLog / 状态行 / 结局计数…）用长片段替换；带空格的片段
@@ -4206,7 +4221,7 @@ const G = {
   done: false,
   flags: {
     ae35: false,         // 阶段①：HAL 的 AE-35 失效报告已经发出（runStory 第一幕）
-    earthRead: false,    // 阶段③：01 屏的地球来信已经读过（Pacing.readEarth）
+    earthRead: false,    // 阶段③：玩家显式点过「确认阅读完毕」（Pacing.confirmEarth），送达不算
     dataSilent: false,   // 指出 AE-35 预测无数据支撑
     deceived: false,     // 相信了 HAL 的假预测
     cipher: false,       // 破译下行链路
@@ -6592,17 +6607,18 @@ async function askLead(id) {
   return true;
 }
 
-/* 当前解锁阶段：只看真实剧情状态（旗标 / 已问线索），不用计时器。
+/* 当前解锁阶段：只看真实剧情状态（旗标），不用计时器。
    ① G.flags.ae35            —— HAL 发出 AE-35 失效报告（runStory 第一幕）
    ② G.flags.chessAssessed   —— 自由对局下完一局，执行力评估已给出（chessInto.assess）
-   ③ G.flags.earthRead 或 askedLeads['earth_msg'] —— 01 屏地球来信已读过
+   ③ G.flags.earthRead       —— 玩家在来信里显式点过「确认阅读完毕」
+                                （打开 01 屏 / 问过 earth_msg 线索都只算「送达」，不算「已读」）
    ④ G.flags.file 或 G.flags.paradox —— 拿到 9088 号文件 / 打破逻辑闭环
    ※ 自由对局重开（FreeSession / newFreeGame）不会回退阶段：旗标只增不减。 */
 function currentLeadStage() {
   let s = 0;
   if (G.flags.ae35) s = 1;
   if (G.flags.chessAssessed) s = Math.max(s, 2);
-  if (G.flags.earthRead || askedLeads.has('earth_msg')) s = Math.max(s, 3);
+  if (G.flags.earthRead) s = Math.max(s, 3);      // 阶段③只认显式确认；送达 ≠ 已读
   if (G.flags.file || G.flags.paradox) s = Math.max(s, 4);
   return s;
 }
@@ -6795,7 +6811,7 @@ const Pacing = (() => {
     if (id === 'p08') { guidedOpened = true; fire(id); }
     else if (id === 'p01') {
       fire(id);
-      if (earth.pending && !earth.read) readEarth();
+      if (earth.pending && !earth.read) deliver();
       /* PanelView.open 每次重建 .pview-body，所以信件是易失的：
          只要已经收过信（读过 / 事件已挂起 / 问过 earth_msg 线索），每次进来都要补渲染，
          否则只有第一次能看到信件，之后再进 01 屏就只剩 AE-35 诊断。 */
@@ -6910,19 +6926,38 @@ const Pacing = (() => {
     if (earth.pop) { try { earth.pop.remove(); } catch (e) {} earth.pop = null; }
   }
 
-  function readEarth() {
+  /* 送达（deliver）：只把信交到玩家手里 —— 关弹窗、撤 01 屏高亮、
+     走 askLead('earth_msg') 那一段台词与线索、把信件渲染进 01 屏。
+     ⚠ 这里不再设置 G.flags.earthRead：「打开面板」不等于「已读」，
+     已读改由玩家显式点「确认阅读完毕」触发（confirmEarth）。 */
+  function deliver() {
     if (earth.read) return;
     earth.read = true; earth.pending = false;
-    G.flags.earthRead = true;            // 阶段③解锁信号：01 屏地球来信已经读过
     closePop();
     highlightClear('p01');
     /* 与已有 earth_msg 线索共用同一条入口：走同一段台词、同一条线索记录 */
     if (!askedLeads.has('earth_msg')) askLead('earth_msg').catch(e => console.error(e));
     else showEarthLetter(PanelView.current());
-    updateLeadChips();                   // 阶段③解锁：来信念完立刻反映到 chips
+    updateLeadChips();                   // 送达本身不推进阶段③；阶段③只认 confirmEarth
   }
 
-  /* 结局 / HAL 终止时，把还挂着的计时器、高亮、弹窗全部收干净 */
+  /* 确认已读（confirmEarth）：由来信底部的「确认阅读完毕」按钮触发。
+     先翻旗标再解锁 chips，随后才让 HAL 开口（台词走已有原声映射，不新增音源）。
+     幂等：已经确认过 / 终端已收尾时直接返回 false ——
+     不重复报线索、不重复加信任度、不重复说话。 */
+  function confirmEarth() {
+    if (stopped || G.flags.earthRead) return false;
+    G.flags.earthRead = true;            // 阶段③解锁信号：玩家显式确认读过地球来信
+    updateLeadChips();                   // 阶段③解锁：chips 15 → 19
+    setObjective('按地球的警告行事');
+    sysLog('舰载日志：乘员已确认阅读地球来信');
+    halSay(L('Thank you, Dave. That is all I needed to know.',
+             '谢谢，Dave。你已经确认读过了 —— 我需要知道的，就只有这一点。'))
+      .catch(e => console.error(e));
+    return true;
+  }
+
+  /* 结局 / HAL 终止时，把还挂着的计时器、高亮、弹窗、待确认的来信全部收干净 */
   function stopAll() {
     stopped = true;
     guidedPending = false;
@@ -6930,13 +6965,22 @@ const Pacing = (() => {
     watchers.forEach((set, id) => { set.forEach(h => { try { h.clear(); } catch (e) {} }); });
     watchers.clear();
     highlightClear('p01'); highlightClear('p08');
+    earth.pending = false;               // 送达/待确认状态一并取消
     closePop();
+    /* 终端已经收尾：页面上还留着的「确认阅读完毕」按钮直接锁死，
+       避免结局之后再写任何剧情状态 */
+    document.querySelectorAll('.earth-letter .btn-confirm').forEach(b => {
+      b.disabled = true; b.dataset.locked = '1';
+    });
   }
 
-  return { begin, takeGuidedChess, onPanel, afterChess, earthEvent, readEarth, stopAll, watch, forget, fire };
+  return { begin, takeGuidedChess, onPanel, afterChess, earthEvent, deliver, confirmEarth, stopAll, watch, forget, fire };
 })();
 
-/* 地球来信正文：一封只做文字展示的信（不走语音，所以不需要音源映射） */
+/* 地球来信正文：一封只做文字展示的信（不走语音，所以不需要音源映射）。
+   底部操作区里的「确认阅读完毕」= 显式的已读信号：不点，G.flags.earthRead 永远为假。
+   PanelView.open 每次重建 .pview-body，本函数会被反复调用 —— 已确认时按钮直接渲染成
+   锁定态，信件正文照常保留（玩家随时可以重读）。 */
 function showEarthLetter(container) {
   if (container && container.querySelector('.earth-letter')) return container.querySelector('.earth-letter');
   const box = document.createElement('div');
@@ -6954,7 +6998,26 @@ function showEarthLetter(container) {
   zh.className = 'l-zh show';
   zh.textContent = 'Dave —— 随你的任务档案一起送来的 AE-35 故障报告是空的。我们从来没有签发过那份报告。'
     + '不管是什么告诉你会失效，那都不是我们。不要在公开频道上讨论这件事。—— M.R.';
-  box.append(h, meta, en, zh);
+  /* 底部操作区：读没读过由玩家说了算，不由「打开过面板」推断 */
+  const act = document.createElement('div');
+  act.className = 'letter-actions';
+  const confirmed = !!G.flags.earthRead;
+  const confirmBtn = document.createElement('button');
+  confirmBtn.type = 'button';
+  confirmBtn.className = 'btn btn-confirm';
+  confirmBtn.dataset.confirm = 'earth';
+  confirmBtn.textContent = T(confirmed ? '已确认阅读' : '确认阅读完毕');
+  confirmBtn.disabled = confirmed;                 // 已经确认过：直接锁定，不能再点
+  if (confirmed) confirmBtn.dataset.confirmed = '1';
+  confirmBtn.onclick = () => {
+    if (confirmBtn.disabled || confirmBtn.dataset.confirmed === '1') return;   // 幂等：重复点击什么都不做
+    if (!Pacing.confirmEarth()) return;
+    confirmBtn.dataset.confirmed = '1';
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = T('已确认阅读');
+  };
+  act.appendChild(confirmBtn);
+  box.append(h, meta, en, zh, act);
   localizeDom(box, isEN());
   if (container) {
     container.insertBefore(box, container.firstChild);
