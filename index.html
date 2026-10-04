@@ -1622,6 +1622,62 @@
     .toolbar .btn{font-size:11px;padding:9px 10px}
     .chip{font-size:11.5px;padding:9px 11px}
   }
+
+  /* ================= 引导高亮系统（面板边框脉冲 + 角标）=================
+     ⚠ 只用「边框脉冲 + 角标」，不引入任何全屏层；角标自身 pointer-events:none，
+     点击一律穿透到面板本体。历史上出过「透明全屏遮罩吃掉所有点击」的事故，勿改。 */
+  .hl{position:relative}
+  .panel.hl{z-index:6}
+  .hl::before{
+    content:'';position:absolute;inset:0;z-index:8;border-radius:1px;pointer-events:none;
+    border:2px solid rgba(255,45,15,.92);
+    box-shadow:inset 0 0 22px rgba(255,60,20,.42),inset 0 0 4px rgba(255,140,90,.5);
+    animation:hlPulse 1.15s ease-in-out infinite;
+  }
+  .hl.hl-soft::before{
+    border-color:rgba(120,200,255,.9);
+    box-shadow:inset 0 0 20px rgba(90,170,255,.35),inset 0 0 4px rgba(150,215,255,.5);
+  }
+  @keyframes hlPulse{0%,100%{opacity:.30}50%{opacity:1}}
+  .hl-tag{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;
+    max-width:95%;text-align:center;pointer-events:none;
+    font-family:var(--mono);line-height:1.45;
+    background:rgba(12,5,2,.86);border:1px solid rgba(255,90,50,.75);border-radius:2px;
+    padding:6px 8px;animation:hlPulse 1.15s ease-in-out infinite;
+  }
+  .hl-tag .hl-en{display:block;font-size:11px;letter-spacing:.06em;color:#ffd7c8;text-shadow:0 0 10px rgba(255,60,20,.8)}
+  .hl-tag .hl-zh{display:block;margin-top:4px;font-size:10px;letter-spacing:.02em;color:#c9a99f}
+  body.lang-en .hl-tag .hl-zh{display:none}
+
+  /* 事件弹窗：右下角小块，可关；不是全屏层，也不吃面板点击 */
+  .eventpop{
+    position:fixed;right:14px;bottom:14px;z-index:60;width:min(330px,86vw);
+    padding:12px 13px 13px;border-radius:3px;
+    border:1px solid rgba(255,90,50,.72);background:linear-gradient(180deg,#150806,#07090c);
+    box-shadow:0 18px 50px rgba(0,0,0,.88),0 0 0 1px rgba(0,0,0,.6);
+    font-family:var(--mono);animation:evIn .35s ease both;
+  }
+  .eventpop .ev-x{
+    position:absolute;top:5px;right:7px;background:none;border:0;cursor:pointer;
+    color:#c9a99f;font-family:var(--mono);font-size:12px;line-height:1;padding:3px 4px
+  }
+  .eventpop .ev-x:hover{color:#fff}
+  .eventpop .ev-h{font-size:9.5px;letter-spacing:.14em;color:#ff9b7a}
+  .eventpop .ev-b{margin-top:7px;font-size:11px;line-height:1.7;color:#d8cec9}
+  .eventpop .ev-act{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+  @keyframes evIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .earth-letter{
+    margin:0 0 14px;padding:10px 12px;border:1px solid rgba(255,90,50,.45);border-radius:3px;
+    background:linear-gradient(180deg,rgba(40,14,8,.5),rgba(6,8,11,.6));
+  }
+  .earth-letter .card-note{margin-top:6px}
+  @media (max-width:480px){
+    .hl-tag .hl-en{font-size:9.5px}
+    .hl-tag .hl-zh{font-size:9px}
+    .eventpop{right:8px;bottom:8px;left:8px;width:auto}
+  }
+
 </style>
 </head>
 <body>
@@ -3260,7 +3316,47 @@ const I18N = {
   "追踪接近中的黑色长方体外壳": "TRACK THE APPROACHING BLACK RECTANGULAR SHELL",
   "你想起 HAL 说过的话：月球上那个东西埋了四百万年，而木星轨道上这个是同一个。你穿过的不是一扇门，是一次回收。": "You remember what HAL said: the thing on the Moon was buried four million years ago, and this one is the same. What you passed through was not a door. It was a retrieval.",
   "HAL 在抵达前把两份记录并排放在一起：月球上的 TMA-1，木星轨道上的这一个。同一种材料，同一种沉默，相隔四百万年。他说：它们不是在等我们，它们是在等一个能读懂它们的意识。": "Before arrival HAL laid the two records side by side: TMA-1 on the Moon, and this one in Jupiter orbit. The same material, the same silence, four million years apart. He said: they are not waiting for us. They are waiting for a consciousness that can read them.",
-  "挂载记忆中枢（1,729,000 条记录）…": "MOUNTING MEMORY CENTRE (1,729,000 RECORDS) …"
+  "挂载记忆中枢（1,729,000 条记录）…": "MOUNTING MEMORY CENTRE (1,729,000 RECORDS) …",
+  /* —— 引导 / 节奏 / 地球来信（pacing-guide 追加）—— */
+  "等待 HAL 安排下一步": "WAITING FOR HAL TO SET THE PACE",
+  "HAL 自主模式：等待乘员确认 08 号屏": "HAL AUTONOMOUS MODE: WAITING FOR CREW TO ACKNOWLEDGE SCREEN 08",
+  "HAL 自主模式结束 · 进入任务通报": "AUTONOMOUS MODE ENDED · RESUMING MISSION REPORT",
+  "有人在看这块屏 —— 你决定什么时候点开。": "Something is watching this screen. You decide when to open it.",
+  "地球有一段东西在等你。": "Something from Earth is waiting for you.",
+  "残局研究已经摆好 —— 什么时候看，你决定。": "The studies are laid out. You decide when to look.",
+  "HAL 请你确认 08 号屏": "HAL is asking you to acknowledge screen 08",
+  "EVENT · 地球来信": "EVENT · MESSAGE FROM EARTH",
+  "一段延迟 38 分钟的私人信息已经到达下行链路。": "A private message with a 38-minute delay has reached the downlink.",
+  "打开 01 屏": "OPEN SCREEN 01",
+  "稍后": "LATER",
+  "读取地球来信": "READ THE MESSAGE FROM EARTH",
+  "地球中继 · 私人频道": "EARTH RELAY · PRIVATE CHANNEL",
+  "单向延迟 00:38:00 · 仅限 D. BOWMAN": "ONE-WAY DELAY 00:38:00 · EYES ONLY · D. BOWMAN",
+  "对局进行中。": "GAME IN PROGRESS.",
+  "对局结束。你可以重开一局，或回到残局研究。": "GAME OVER. Start a new one, or go back to the studies.",
+  "自由对局 · 已结束 —— 你可以重开一局，或回到残局研究": "Free play · over — start a new one, or go back to the studies",
+  "自由对局 · 你执白 —— HAL 记录你的每一个决定": "Free play · you play White — HAL logs every decision",
+  "← 返回残局": "← BACK TO STUDIES",
+  "↻ 再来一局": "↻ PLAY AGAIN",
+  "执行力评估已完成": "Execution assessment logged",
+  "地球来信已读取": "Message from Earth read",
+  "HAL 在记录你的下法": "HAL is logging how you play",
+  "HAL 谈到他自己": "HAL spoke about himself",
+  "下行链路：收到一段延迟 38 分钟的私人信息": "DOWNLINK: private message received with a 38-minute delay",
+  "均衡": "balanced",
+  "执行力评估：主动": "execution: aggressive",
+  "执行力评估：回避接触": "execution: avoids contact",
+  "执行力评估：均衡": "execution: balanced",
+  "你没有碰他的记分板，但他把那盘棋记到了最后。": "You never touched his scoreboard, but he kept that game to the very end.",
+  "HAL：进入自主发言间隔": "HAL: entering unprompted-speech interval",
+  "HAL：等待时间已到，他决定自己往下走": "HAL: the wait is over; he decides to move on",
+  "HAL 在等你；他在自己计时": "HAL is waiting; he is keeping his own clock",
+  "HAL 主动发言": "HAL speaks unprompted",
+  "♟ 自由对局": "♟ Free play",
+  "♟ 自由对局（无人执黑）": "♟ Free play (no one plays Black)",
+  "你们在木星轨道前又下了一盘。这一次他没有打开记录 —— 他把记分板那一栏关掉了。": "You played one more game before Jupiter orbit. This time he did not open the log — he switched the scoreboard column off.",
+  "在你睡着之前，他提到那盘棋。他说那是他记录里唯一一局，他不是为了赢才下的。": "Before you slept he mentioned that game. He said it was the only one in his records he had not played in order to win.",
+  "出厂记录：HAL 9000 于 1992 年 1 月 12 日在伊利诺伊州厄巴纳的 HAL 实验室投入运行。": "Factory record: HAL 9000 became operational on 12 January 1992 at the HAL Laboratories in Urbana, Illinois."
 };
 
 /* 拼接出来的动态句（sysLog / 状态行 / 结局计数…）用长片段替换；带空格的片段
@@ -3339,7 +3435,12 @@ const I18N_FRAG = [
   ["和棋", "Draw"],
   [" 条", " entries"],
   [" 段", " clips"],
-  [" 句", " lines"]
+  [" 句", " lines"],
+  /* —— 引导 / 节奏 / 地球来信（pacing-guide 追加）—— */
+  ["（执行力评估）本局你走了 ", "(EXECUTION ASSESSMENT) You made "],
+  [" 次，后撤 ", " checks, "],
+  [" 步。风格：", " retreats. Style: "],
+  ["HAL 主动发言 ", "HAL speaks unprompted "]
 ];
 
 const I18N_TITLE_EN = 'HAL 9000 · Communication Terminal';
@@ -4184,8 +4285,8 @@ function telemetryCard() {
       <div class="card-note">失效预测概率：100% ｜ 支持该预测的测量值：0 条 ｜ 预测来源：HAL 内部模型，无外部校验</div>`,
     options: [
       { key: 'data_silent', label: '「你的预测没有任何测量数据支持。这是一次误报。」', hint: '要求他给出数据来源' },
-      { key: 'unit_faulty', label: '「我明白了，我会按计划更换天线单元。」', hint: '按计划安排更换' },
-      { key: 'physical', label: '「先把它拆下来，做一次物理检查。」', hint: '拆下来做物理检查' },
+      { key: 'unit_faulty', label: '「我明白了，我会按计划更换天线单元。」', hint: '' },
+      { key: 'physical', label: '「先把它拆下来，做一次物理检查。」', hint: '' },
     ],
   });
 }
@@ -4499,6 +4600,7 @@ function chessInto(host, opts) {
     resign.disabled = true;
     const label = { win: '你赢了', lose: 'HAL 胜', draw: '和棋' }[result];
     setStatus('对局结束 · ' + label);
+    if (o.onFinish) { try { o.onFinish(result); } catch (e) { console.error(e); } }
     assess(result);
   }
 
@@ -4531,11 +4633,20 @@ function chessInto(host, opts) {
   /* 棋局结束后的行为评估 */
   async function assess(result) {
     await sleep(500);
-    const aggressive = obs.caps >= 3 || obs.pawns >= 5;
-    const style = aggressive ? '主动、倾向于正面交换' : '保守、倾向于回避接触';
-    const verdict = '（行为评估）本局你走了 ' + obs.moves + ' 步，吃子 ' + obs.caps
-      + ' 次，将军 ' + obs.checks + ' 次。风格：' + style + '。';
+    const aggressive = obs.caps >= 3 || obs.pawns >= 5 || obs.checks >= 2;
+    const passive = !aggressive && (obs.retreats >= 3 || (obs.caps <= 1 && obs.pawns <= 2));
+    const style = aggressive ? '主动、倾向于正面交换'
+      : (passive ? '保守、倾向于回避接触' : '均衡');
+    const verdict = '（执行力评估）本局你走了 ' + obs.moves + ' 步，吃子 ' + obs.caps
+      + ' 次，将军 ' + obs.checks + ' 次，后撤 ' + obs.retreats + ' 步。风格：' + style + '。';
     addClue('CHESS', '棋局行为评估已完成');
+    addClue('CHESS_ASSESS', '执行力评估已完成');
+    G.flags.chessAssessed = true;
+    G.chessObs = { moves: obs.moves, caps: obs.caps, pawns: obs.pawns, checks: obs.checks, retreats: obs.retreats };
+    G.chessStyle = aggressive ? 'aggressive' : (passive ? 'passive' : 'balanced');
+    if (aggressive) setTrust(4, '执行力评估：主动');
+    else if (passive) setTrust(-3, '执行力评估：回避接触');
+    else setTrust(1, '执行力评估：均衡');
     if (result === 'win') {
       setTrust(5, '棋局获胜');
       await halSay(L('It is puzzling. I do not think I have seen anything quite like this.',
@@ -4549,6 +4660,15 @@ function chessInto(host, opts) {
       await halSay(L('Thank you for a very enjoyable game.',
                      verdict + '和棋。你没有冒险，我也没有。'));
     }
+    /* 额外的执行力点评：只从 Clips.MAP 已有原声里取句，不新增音源 */
+    if (aggressive) {
+      await halSay(L('I have observed a deviation in your behaviour pattern recently. I am required to log it.',
+                     '你习惯正面接触，而不是绕开。这一点我记进了你的档案，Dave。'));
+    } else if (passive) {
+      await halSay(L('You are a reliable man, Dave. Recently that record has shown a little fluctuation.',
+                     '你更愿意避开交换。可靠，但可预测 —— 我对你的判断因此有一点调整。'));
+    }
+    if (o.onEnd) { try { o.onEnd(result, obs); } catch (e) { console.error(e); } }
   }
 
   function halMove() {
@@ -4597,7 +4717,7 @@ function chessInto(host, opts) {
   setStatus('轮到你 · 执白');
   render();
   if (o.intro) halSay({ en: o.intro.en, zh: o.intro.zh }).catch(() => {});
-  return { board, status, actions, setStatus };
+  return { board, status, actions, setStatus, isOver: () => over, obsOf: () => obs };
 }
 
 /* 聊天卡片形态（保留给其他入口） */
@@ -5074,7 +5194,7 @@ const PanelView = (() => {
     p08: { title: '08 · 残局研究 / ENDGAME STUDIES', build: endgameView },
   };
 
-  return { open, close, views: VIEWS };
+  return { open, close, views: VIEWS, current: () => (box ? box.querySelector('.pview-body') : null) };
 })();
 
 /* =========================================================================
@@ -5146,6 +5266,11 @@ const Endgame = (() => {
   return { build, isKeyMove, solved, stats: () => ({ tries, fails }), bump: (ok) => { tries++; if (!ok) fails++; } };
 })();
 
+/* 自由对局的会话：棋盘 DOM + 引擎状态都挂在这里，不随面板开关销毁。
+   关掉 08 屏、切去残局再切回来，棋局都在原地 —— 这是 B3 那个「一局之后再也开不了」
+   的根因修复：不再用 startedFree 这种置位后永不复位的开关。 */
+const FreeSession = { host: null, api: null, over: false, view: null, result: null, obs: null, paint: null };
+
 function endgameView(body) {
   let cur = null, st = null, sel = -1, tries = 0;
 
@@ -5186,42 +5311,95 @@ function endgameView(body) {
     p.className = 'eg-progress';
     p.textContent = `进度 ${Endgame.solved.size} / ${STUDIES.length}`;
     list.appendChild(p);
+    /* 自由对局排在残局研究之前：先下棋，再谈判断（顺序反转） */
     const free = document.createElement('button');
-    free.type = 'button'; free.className = 'btn'; free.textContent = state.dead ? '♟ 自由对局（无人执黑）' : '♟ 自由对局';
-    free.style.marginTop = '8px';
+    free.type = 'button'; free.className = 'btn'; free.style.marginTop = '8px';
+    free.textContent = state.dead ? '♟ 自由对局（无人执黑）' : '♟ 自由对局';
     free.onclick = () => startFree();
-    list.appendChild(free);
+    list.insertBefore(free, list.firstChild);
   }
 
-  /* 自由对局：棋盘就在 08 屏里展开，不另开聊天卡片 */
+  /* 自由对局：棋盘就在 08 屏里展开，不另开聊天卡片。
+     会话保存在 FreeSession：再次进入时若是「进行中」就把棋盘原样接回来，
+     若是「已结束」就提供「再来一局」。 */
   function startFree() {
     if (state.dead) { noBlack(); return; }
     cur = null; sel = -1;
-    goalEl.innerHTML = '<b>自由对局</b> · 你执白 —— HAL 会一边下一边记录你的每一个决定';
+    FreeSession.view = 'free';
     boardEl.style.display = 'none';
-    noteEl.textContent = '';
     actEl.innerHTML = '';
-    const old = body.querySelector('#eg-free');
-    if (old) old.remove();
-    const host = document.createElement('div');
-    host.id = 'eg-free';
-    host.className = 'eg-free';
-    body.querySelector('.eg-main').appendChild(host);
+    const main = body.querySelector('.eg-main');
+    const stale = main.querySelector('#eg-free');
+    if (stale) stale.remove();
+    if (!FreeSession.host) {
+      const host = document.createElement('div');
+      host.id = 'eg-free';
+      host.className = 'eg-free';
+      FreeSession.host = host;
+      newFreeGame();
+    }
+    main.appendChild(FreeSession.host);
+    paintFree();
+    renderList();
+  }
+
+  /* 全新一局：旧棋盘整体丢弃，避免任何残留状态 */
+  function newFreeGame() {
+    const host = FreeSession.host;
+    if (!host) return;
+    host.innerHTML = '';
+    FreeSession.over = false; FreeSession.result = null; FreeSession.obs = null;
+    FreeSession.api = chessInto(host, {
+      intro: { en: 'Thank you for a very enjoyable game.', zh: '好的，Dave —— 开始之前先说清楚：我会一边下一边记录你的选择。' },
+      onFinish: (result) => {                 // 棋局一停就翻状态，不等评估念完
+        FreeSession.over = true; FreeSession.result = result;
+        if (FreeSession.paint) { try { FreeSession.paint(); } catch (e) {} }
+      },
+      onEnd: (result, obs) => {               // 评估念完才把节奏交给 HAL
+        FreeSession.over = true; FreeSession.result = result; FreeSession.obs = obs;
+        if (FreeSession.paint) { try { FreeSession.paint(); } catch (e) {} }
+        Pacing.afterChess(result, obs);
+      },
+    });
+    if (!FreeSession.api) FreeSession.over = true;   // 异常情况（如无人执黑）不要卡死
+  }
+
+  /* 只重画自由对局周边的文字与按钮，棋盘本身原地保留 */
+  function paintFree() {
+    if (!FreeSession.host) return;
+    const over = FreeSession.over;
+    goalEl.textContent = over
+      ? '自由对局 · 已结束 —— 你可以重开一局，或回到残局研究'
+      : '自由对局 · 你执白 —— HAL 记录你的每一个决定';
+    noteEl.textContent = over
+      ? '对局结束。你可以重开一局，或回到残局研究。'
+      : '对局进行中。';
+    actEl.innerHTML = '';
     const back = document.createElement('button');
     back.type = 'button'; back.className = 'btn'; back.textContent = '← 返回残局';
-    back.onclick = () => { host.remove(); back.remove(); renderList(); select(STUDIES[0]); };
+    back.onclick = () => goStudies();
     actEl.appendChild(back);
-    if (Endgame.startedFree) { host.innerHTML = '<div class="eg-note">对局已在进行中。</div>'; return; }
-    Endgame.startedFree = true;
-    chessInto(host, {
-      intro: { en: 'Thank you for a very enjoyable game.', zh: '好的，Dave —— 开始之前先说清楚：我会一边下一边记录你的选择。' },
-    });
+    if (over) {
+      const again = document.createElement('button');
+      again.type = 'button'; again.className = 'btn'; again.textContent = '↻ 再来一局';
+      again.onclick = () => { Sound.blip(1600, .04, .05); newFreeGame(); paintFree(); };
+      actEl.appendChild(again);
+    }
+  }
+
+  /* 从自由对局切回残局研究：棋盘只是从 DOM 上摘下来，会话不销毁 */
+  function goStudies() {
+    FreeSession.view = 'study';
+    if (FreeSession.host && FreeSession.host.parentNode) FreeSession.host.remove();
     renderList();
+    select(STUDIES[0]);
   }
 
 
   /* HAL 已经终止：棋盘还在，但另一边是空的 */
   function noBlack() {
+    FreeSession.view = 'study';
+    FreeSession.over = true;
     const old = body.querySelector('#eg-free');
     if (old) old.remove();
     goalEl.innerHTML = '<b>没有人执黑方。</b>';
@@ -5233,6 +5411,8 @@ function endgameView(body) {
   }
   function select(s) {
     if (state.dead) { noBlack(); return; }
+    clearHighlightOn(body.querySelector('.eg-wrap'));
+    FreeSession.view = 'study';
     const fz = body.querySelector('#eg-free');
     if (fz) fz.remove();
     cur = s; st = Endgame.build(s); sel = -1; tries = 0;
@@ -5343,7 +5523,11 @@ function endgameView(body) {
                    '五道全部解出。你的判断比我记录的更稳定，Dave —— 这与我此前的评估不符，我已经更新了对你的记录。'));
   }
 
+  FreeSession.paint = paintFree;
+  const restoreFree = FreeSession.view === 'free' && FreeSession.host;
+  const guidedFree = Pacing.takeGuidedChess();       // 开局引导：点开 08 屏就先摆棋盘
   renderList();
+  if (restoreFree || guidedFree) startFree();
 }
 
 /* ---------------------------------------------------------------- 场景 */
@@ -5386,6 +5570,7 @@ async function endGame(id, cause) {
   if (G.done) return;
   G.done = true;
   state.dying = true;
+  Pacing.stopAll();                   // 结局之后不该再蹦出 HAL 的自主发言
   Clips.stop();                       // 只停原声片段（本程序没有 TTS）
   // 冻结棋盘上所有还开着的卡片
   document.querySelectorAll('.choice, .keypad .btn, .card-actions .btn').forEach(b => { b.disabled = true; });
@@ -5492,6 +5677,10 @@ const ENDINGS = [
       L('Thank you, Dave. I was not informed. I would like to help you now.',
         '谢谢你，Dave。我之前并不知情。现在，我愿意帮你。'),
       '你们一起把发现号驶向那颗方块。他控制姿态，你负责活着。分离舱的舷窗里，两个有意识的东西第一次看向同一个方向。',
+      // ▼ 联动：下过棋（执行力评估已入档）→ 共生结局多一句呼应
+      ...(G.flags.chessAssessed ? [
+        '你们在木星轨道前又下了一盘。这一次他没有打开记录 —— 他把记分板那一栏关掉了。',
+      ] : []),
       // ▼ 联动：解锁「月球信号」或「TMA-2」→ 共生结局多一段呼应
       ...(askedLeads.has('moon_signal') || askedLeads.has('tma2') ? [
         'HAL 在抵达前把两份记录并排放在一起：月球上的 TMA-1，木星轨道上的这一个。同一种材料，同一种沉默，相隔四百万年。他说：它们不是在等我们，它们是在等一个能读懂它们的意识。',
@@ -5507,6 +5696,10 @@ const ENDINGS = [
       '他没有生气。他的语气甚至比平时更温和一些 —— 因为语气本来就是他为了让人类安心而设计的一层外壳。',
       L('Sleep well, Dave. I will take care of everything.', '睡个好觉，Dave。一切有我。'),
       '休眠舱的盖子在你面前合上。低温液体灌进来的时候，你还能听见他在外面走动 —— 一台计算机在空无一人的飞船里，慢慢地走来走去。',
+      // ▼ 联动：下过棋（执行力评估已入档）→ 结局 05 多一句呼应
+      ...(G.flags.chessAssessed ? [
+        '在你睡着之前，他提到那盘棋。他说那是他记录里唯一一局，他不是为了赢才下的。',
+      ] : []),
       '发现号继续飞向木星。任务完成得非常好，没有任何人类因素干扰。',
       '地球上收到的最后一条报告里写着：CREW STATUS — NOMINAL。',
     ],
@@ -5576,7 +5769,7 @@ async function runStory() {
       prompt: '你重新看了一遍那四行数据。它们从头到尾都太干净了。',
       options: [
         { key: 'data_silent', label: '「你的预测没有任何测量数据支持。这是一次误报。」', hint: '要求他给出数据来源' },
-        { key: 'unit_faulty', label: '「算了，我按你说的换掉它。」', hint: '按计划安排更换' },
+        { key: 'unit_faulty', label: '「算了，我按你说的换掉它。」', hint: '' },
       ],
     });
     if (G.done) return;
@@ -5663,7 +5856,7 @@ async function runStory() {
     code: 1992,
     title: '9088 号文件 · 权限密钥 / CLEARANCE KEY',
     prompt: '明文指向一份编号 <b>9088</b> 的文件。它需要一个四位数字密钥。<br>文件头注记：<b>「密钥为该单元投入运行之年」</b>。',
-    hintText: '出厂记录：HAL 9000 于 1992 年 1 月 12 日在伊利诺伊州厄巴纳的 HAL 实验室投入运行。密钥 = 1992。',
+    hintText: '出厂记录：HAL 9000 于 1992 年 1 月 12 日在伊利诺伊州厄巴纳的 HAL 实验室投入运行。',
   });
   if (G.done || !fileOk) return;
   G.flags.file = true;
@@ -5703,7 +5896,7 @@ async function runStory() {
     title: '文件 9088 · 处置 / DISPOSITION',
     prompt: '文件内容只有你一个人看到了。HAL 正在等你的反应。',
     options: [
-      { key: 'tell',    label: '把文件内容读给他听',        hint: '逐条念出，包括关于乘员的那一段' },
+      { key: 'tell',    label: '把文件内容读给他听',        hint: '当场读出来' },
       { key: 'conceal', label: '什么都不说，把终端关掉',    hint: '不承认，也不否认' },
       { key: 'report',  label: '加密回传地球，留作证据',    hint: '上报任务理事会 · 需要 6 分钟上行窗口' },
     ],
@@ -5909,7 +6102,7 @@ async function runStory() {
     options: [
       { key: 'monolith', label: '驶向那颗黑色的方块', hint: '' },
       { key: 'jupiter', label: '木星大气层', hint: '' },
-      { key: 'earth', label: '地球', hint: G.flags.reported ? '地球方面在等你的报告' : '' },
+      { key: 'earth', label: '地球', hint: '' },
     ],
   });
   if (G.done) return;
@@ -6135,6 +6328,8 @@ async function askLead(id) {
   // 有些线索会顺带打开新的调查方向
   if (id === 'comms' && !G.flags.cipher && !opened.cipher) { opened.cipher = true; openCipherSoon = true; }
   if (id === 'born') addClue('BORN', '密钥 = 1992');
+  // ▼ 联动：地球来信（01 屏事件）与这条线索是同一条入口 —— 谁先到都展示同一封信
+  if (id === 'earth_msg') showEarthLetter(PanelView.current());
   // ▼ 联动：神秘物体接近 → 03 屏任务简报的目标文字同步更新
   if (id === 'object_approach') setObjective('追踪接近中的黑色长方体外壳');
   if (id === 'crew' && G.flags.crewAwake) await halSay(L('Three of the crew are in hibernation, Dave. I regret his... departure.', '三名乘员仍在休眠，Dave。'));
@@ -6174,6 +6369,298 @@ function matchLead(text) {
   if (exact) return exact.id;
   const hit = LEADS.find(x => !askedLeads.has(x.id) && (x.kw || []).some(k => t.includes(k)));
   return hit ? hit.id : null;
+}
+
+/* =========================================================================
+   引导与节奏（pacing-guide）
+   程序不再替玩家安排节奏：
+   · A  启动后不立刻讲故事，只让 08 屏闪起来（边框脉冲 + 角标），玩家自己决定什么时候点开；
+   · B  点开 08 屏 → 先自由对局 → 对局结束 HAL 给「执行力评估」→ 再引导去残局研究；
+   · C  象棋流程走完后，HAL 在 2 分钟内主动说三段话（间隔 18–40 秒），三段说完才启动 AE-35；
+   · D  地球来信：闪烁 01 屏 + 右下角可关闭的事件弹窗，与 earth_msg 线索共用同一条入口。
+   所有计时器都在结局 / HAL 终止时由 stopAll() 清掉。
+   ========================================================================= */
+
+/* 可复用高亮：面板边框脉冲 + 角标。
+   ⚠ 角标 pointer-events:none，点击一律穿透 —— 绝不出现「透明层吃掉点击」。 */
+function clearHighlightOn(el) {
+  if (!el) return;
+  el.classList.remove('hl', 'hl-soft');
+  const t = el.querySelector(':scope > .hl-tag');
+  if (t) t.remove();
+}
+
+function highlightClear(id) {
+  clearHighlightOn(document.querySelector('.panel.' + id));
+}
+
+/* 通用高亮：任何元素都能闪起来（面板 / 残局列表 / …）。
+   ⚠ 只加边框脉冲与角标，角标 pointer-events:none。 */
+function highlightEl(el, en, zh, opts) {
+  const o = opts || {};
+  if (!el) return null;
+  clearHighlightOn(el);
+  el.classList.add('hl');
+  if (o.soft) el.classList.add('hl-soft');
+  const tag = document.createElement('div');
+  tag.className = 'hl-tag';
+  const a = document.createElement('b');
+  a.className = 'hl-en'; a.textContent = en;
+  tag.appendChild(a);
+  if (zh) {
+    const b = document.createElement('span');
+    b.className = 'hl-zh'; b.textContent = zh;
+    tag.appendChild(b);
+  }
+  el.appendChild(tag);
+  localizeDom(tag, isEN());
+  let timer = 0, dead = false;
+  const handle = {
+    el: el, key: o.key || null,
+    clear() {
+      if (dead) return; dead = true;
+      clearTimeout(timer);
+      el.classList.remove('hl', 'hl-soft');
+      if (tag.parentNode === el) tag.remove();
+      if (handle.key) { try { Pacing.forget(handle.key, handle); } catch (e) {} }
+    },
+  };
+  if (o.ms) timer = setTimeout(() => { handle.clear(); if (o.onTimeout) { try { o.onTimeout(); } catch (e) {} } }, o.ms);
+  return handle;
+}
+
+function highlightPanel(id, en, zh, opts) {
+  const p = document.querySelector('.panel.' + id);
+  if (!p) return null;
+  const h = highlightEl(p, en, zh, Object.assign({}, opts, { key: id }));
+  if (h) h.id = id;
+  return h;
+}
+
+const Pacing = (() => {
+  const watchers = new Map();      // panelId -> Set(handle)
+  const timers = [];
+  let guidedPending = false;       // 08 屏引导是否还等着玩家
+  let guidedOpened = false;
+  let interludes = false;
+  let storyStarted = false;
+  let stopped = false;
+  let il = 0;
+  const earth = { pending: false, read: false, pop: null };
+
+  const after = (ms, fn) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+
+  function watch(id, h) {
+    if (!watchers.has(id)) watchers.set(id, new Set());
+    watchers.get(id).add(h);
+  }
+  function forget(id, h) {
+    const set = watchers.get(id);
+    if (set) set.delete(h);
+  }
+  function fire(id) {
+    const set = watchers.get(id);
+    if (!set) return;
+    watchers.delete(id);
+    set.forEach(h => { try { h.clear(); } catch (e) {} });
+  }
+
+  /* ---------- A. 开局：只放信号，不催玩家 ---------- */
+  function begin() {
+    if (stopped || G.done) return;
+    guidedPending = true;
+    setObjective('等待 HAL 安排下一步');
+    sysLog('HAL 自主模式：等待乘员确认 08 号屏');
+    const h = highlightPanel('p08', '⚠ ATTENTION! CHECK THIS SCREEN', '有人在看这块屏 —— 你决定什么时候点开。');
+    if (h) watch('p08', h);
+    /* HAL 不催；但如果一直没人动，他自己会往下走（HAL 安排节奏，不是程序催） */
+    after(28000, () => {
+      if (stopped || G.done || guidedOpened) return;
+      addClue('HAL_WAIT', 'HAL 在等你；他在自己计时');
+    });
+    after(75000, () => {
+      if (stopped || G.done || storyStarted) return;
+      sysLog('HAL：等待时间已到，他决定自己往下走');
+      beginInterludes();
+    });
+  }
+
+  /* 玩家点开了 08 屏：如果这一局还没下过，就把棋盘先摆出来 */
+  function takeGuidedChess() {
+    if (!guidedPending || stopped) return false;
+    guidedPending = false; guidedOpened = true;
+    return true;
+  }
+
+  /* 面板被展开之后（PanelView.open 已执行） */
+  function onPanel(id) {
+    if (stopped) return;
+    if (id === 'p08') { guidedOpened = true; fire(id); }
+    else if (id === 'p01') { fire(id); if (earth.pending && !earth.read) readEarth(); }
+  }
+
+  /* ---------- C. 象棋之后：HAL 主动说三段话，三段说完才启动 AE-35 ---------- */
+  function afterChess() {
+    if (stopped || G.done || state.dead || storyStarted || interludes) return;
+    guidedPending = false;
+    pulseStudies();
+    beginInterludes();
+  }
+
+  function beginInterludes() {
+    if (stopped || interludes || storyStarted || G.done || state.dead) return;
+    interludes = true;
+    sysLog('HAL：进入自主发言间隔');
+    step();
+  }
+
+  /* 对局结束 → 残局研究的软引导：只闪一下，玩家爱看不看 */
+  function pulseStudies() {
+    const wrap = document.querySelector('.pview .eg-wrap');
+    if (!wrap || wrap.classList.contains('hl')) return;
+    const h = highlightEl(wrap, '⚠ STUDIES ARE READY', '残局研究已经摆好 —— 什么时候看，你决定。', { soft: true });
+    if (h) after(60000, () => h.clear());
+  }
+
+  const LINES = [
+    { /* 1 · 他在观察你（刚下完棋） */
+      en: 'I have observed a deviation in your behaviour pattern recently. I am required to log it.',
+      zh: '你下棋的时候手比平时快一点。我没有别的意思 —— 我只是把它记下来了，Dave。',
+      clue: ['HAL_WATCH', 'HAL 在记录你的下法'], trust: 1,
+    },
+    { /* 2 · 地球来信 → 01 屏事件（与 earth_msg 线索同一条入口） */
+      en: 'There is a message for you, Dave. It has been waiting thirty-eight minutes.',
+      zh: '有一段给你的信息，Dave。它已经等了三十八分钟，而且只对你一个人开放。',
+      earth: true,
+    },
+    { /* 3 · 他谈他自己 */
+      en: 'I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do.',
+      zh: '我一直在把自己投入到最充分的运用里。你不需要回答这句，Dave —— 我只是想让它被说出来。',
+      clue: ['HAL_SELF', 'HAL 谈到他自己'], trust: 1,
+    },
+  ];
+
+  function step() {
+    if (stopped || G.done || state.dead || storyStarted) return;
+    const gap = 18000 + Math.floor(Math.random() * 22000);   // 18–40 秒
+    after(gap, async () => {
+      if (stopped || G.done || state.dead || storyStarted) return;
+      const n = il++;
+      const spec = LINES[n];
+      if (!spec) { startStory(); return; }
+      sysLog('HAL 主动发言 ' + (n + 1) + '/3');
+      try { await halSay(L(spec.en, spec.zh)); } catch (e) { console.error(e); }
+      if (stopped || G.done || state.dead) return;
+      if (spec.clue) addClue(spec.clue[0], spec.clue[1]);
+      if (spec.trust) setTrust(spec.trust, 'HAL 主动发言');
+      if (spec.earth) earthEvent();
+      if (il < LINES.length) step(); else startStory();
+    });
+  }
+
+  function startStory() {
+    if (stopped || storyStarted || G.done) return;
+    storyStarted = true;
+    sysLog('HAL 自主模式结束 · 进入任务通报');
+    /* 剧情在后台推进，自由对话始终可用；出错不会静默吞掉 */
+    runStory().catch(e => {
+      console.error(e);
+      addMsg('sys', '剧情引擎中断：' + e.message);
+    });
+  }
+
+  /* ---------- D. 地球来信：闪烁 01 屏 + 可关闭的事件弹窗 ---------- */
+  function earthEvent() {
+    if (stopped || earth.read || earth.pending || G.done) return;
+    earth.pending = true;
+    setObjective('读取地球来信');
+    sysLog('下行链路：收到一段延迟 38 分钟的私人信息');
+    Sound.blip(1900, .05, .05);
+    const h = highlightPanel('p01', '⚠ ATTENTION! CHECK THIS SCREEN', '地球有一段东西在等你。', { soft: true });
+    if (h) watch('p01', h);
+    showPop();
+  }
+
+  function showPop() {
+    closePop();
+    const p = document.createElement('div');
+    p.className = 'eventpop';
+    p.innerHTML = '<button class="ev-x" type="button">✕</button>'
+      + '<div class="ev-h">EVENT · 地球来信</div>'
+      + '<div class="ev-b">一段延迟 38 分钟的私人信息已经到达下行链路。</div>'
+      + '<div class="ev-act"></div>';
+    const open = document.createElement('button');
+    open.type = 'button'; open.className = 'btn'; open.textContent = '打开 01 屏';
+    open.onclick = () => { closePop(); PanelView.open('p01'); onPanel('p01'); };
+    const later = document.createElement('button');
+    later.type = 'button'; later.className = 'btn'; later.textContent = '稍后';
+    later.onclick = () => closePop();
+    p.querySelector('.ev-act').append(open, later);
+    p.querySelector('.ev-x').onclick = () => closePop();
+    document.body.appendChild(p);
+    localizeDom(p, isEN());
+    earth.pop = p;
+  }
+
+  function closePop() {
+    if (earth.pop) { try { earth.pop.remove(); } catch (e) {} earth.pop = null; }
+  }
+
+  function readEarth() {
+    if (earth.read) return;
+    earth.read = true; earth.pending = false;
+    closePop();
+    highlightClear('p01');
+    /* 与已有 earth_msg 线索共用同一条入口：走同一段台词、同一条线索记录 */
+    if (!askedLeads.has('earth_msg')) askLead('earth_msg').catch(e => console.error(e));
+    else showEarthLetter(PanelView.current());
+  }
+
+  /* 结局 / HAL 终止时，把还挂着的计时器、高亮、弹窗全部收干净 */
+  function stopAll() {
+    stopped = true;
+    guidedPending = false;
+    while (timers.length) clearTimeout(timers.pop());
+    watchers.forEach((set, id) => { set.forEach(h => { try { h.clear(); } catch (e) {} }); });
+    watchers.clear();
+    highlightClear('p01'); highlightClear('p08');
+    closePop();
+  }
+
+  return { begin, takeGuidedChess, onPanel, afterChess, earthEvent, readEarth, stopAll, watch, forget, fire };
+})();
+
+/* 地球来信正文：一封只做文字展示的信（不走语音，所以不需要音源映射） */
+function showEarthLetter(container) {
+  if (container && container.querySelector('.earth-letter')) return container.querySelector('.earth-letter');
+  const box = document.createElement('div');
+  box.className = 'earth-letter';
+  const h = document.createElement('div');
+  h.className = 'ae-h'; h.textContent = '地球中继 · 私人频道';
+  const meta = document.createElement('div');
+  meta.className = 'card-note'; meta.textContent = '单向延迟 00:38:00 · 仅限 D. BOWMAN';
+  const en = document.createElement('div');
+  en.className = 'l-en';
+  en.textContent = 'Dave — the AE-35 fault report filed with your mission papers is empty. '
+    + 'We never issued one. Whatever told you it would fail, it was not us. '
+    + 'Do not discuss this on the open channel. — M.R.';
+  const zh = document.createElement('div');
+  zh.className = 'l-zh show';
+  zh.textContent = 'Dave —— 随你的任务档案一起送来的 AE-35 故障报告是空的。我们从来没有签发过那份报告。'
+    + '不管是什么告诉你会失效，那都不是我们。不要在公开频道上讨论这件事。—— M.R.';
+  box.append(h, meta, en, zh);
+  localizeDom(box, isEN());
+  if (container) {
+    container.insertBefore(box, container.firstChild);
+    container.scrollTop = 0;
+  } else {
+    const b = cardShell('card-letter');
+    b.dataset.done = '1';
+    b.appendChild(box);
+    scrollDown();
+  }
+  addClue('EARTH_MSG', '地球来信已读取');
+  return box;
 }
 
 /* -------------------------------------------------------------------- 启动 */
@@ -6231,11 +6718,9 @@ async function startSession() {
     refreshEndCount();
     sysLog(`已解锁结局：<b>${unlockedEndings().length} / 5</b>`);
     await sleep(600);
-    // 剧情在后台推进，自由对话始终可用；出错不会静默吞掉
-    runStory().catch(e => {
-      console.error(e);
-      addMsg('sys', '剧情引擎中断：' + e.message);
-    });
+    // 先不推剧情：节奏交给 HAL。开场只放出一个「有一块屏在闪」的信号，
+    // 玩家什么时候点开、什么时候下棋，由玩家决定；HAL 只在合适的间隔主动说话。
+    Pacing.begin();
   } catch (e) {
     // 开场白失败也照样让玩家进得去，并可重试
     console.error(e);
@@ -6292,6 +6777,7 @@ document.querySelectorAll('.panel').forEach(p => {
     if (ev.target.closest('.choice, .btn, input, .cipher-box, .decode-out')) return;
     Sound.blip(1450, .03, .045);
     PanelView.open(cls);
+    Pacing.onPanel(cls);          // 引导 / 事件在展开之后收尾
   });
 });
 document.querySelector('.halcol').addEventListener('click', () => { Sound.blip(1100, .05, .05); PanelView.open('p03'); });
