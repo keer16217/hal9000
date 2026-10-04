@@ -6793,7 +6793,14 @@ const Pacing = (() => {
   function onPanel(id) {
     if (stopped) return;
     if (id === 'p08') { guidedOpened = true; fire(id); }
-    else if (id === 'p01') { fire(id); if (earth.pending && !earth.read) readEarth(); }
+    else if (id === 'p01') {
+      fire(id);
+      if (earth.pending && !earth.read) readEarth();
+      /* PanelView.open 每次重建 .pview-body，所以信件是易失的：
+         只要已经收过信（读过 / 事件已挂起 / 问过 earth_msg 线索），每次进来都要补渲染，
+         否则只有第一次能看到信件，之后再进 01 屏就只剩 AE-35 诊断。 */
+      else if (earth.read || G.flags.earthRead || askedLeads.has('earth_msg')) showEarthLetter(PanelView.current());
+    }
   }
 
   /* ---------- C. 象棋之后：HAL 主动说三段话，三段说完才启动 AE-35 ---------- */
