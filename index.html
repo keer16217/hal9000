@@ -1507,6 +1507,9 @@
   .chips::-webkit-scrollbar{width:6px}
   .chips::-webkit-scrollbar-thumb{background:rgba(255,60,25,.32);border-radius:3px}
   .chips::-webkit-scrollbar-track{background:rgba(255,255,255,.03)}
+  /* 提问进度计数：位置在 chips 区域上方，只数 LEADS（不含动作 chip） */
+  .chipbar{flex:0 0 auto;padding:0 14px 4px}
+  .chip-count{font-family:var(--mono);font-size:10px;letter-spacing:.11em;color:rgba(255,255,255,.46)}
 
   /* =====================================================================
      竖屏 / 小屏手机适配（纯媒体查询，不做 UA 判断）
@@ -1561,6 +1564,7 @@
 
     /* ---- chips：换行不溢出，每颗都是 ≥44px 的手指点击目标 ---- */
     .chips{padding:0 11px 8px;gap:7px;max-height:28vh}
+    .chipbar{padding:0 11px 4px}
     .chip{
       font-size:12px;line-height:1.3;min-height:44px;padding:9px 13px;border-radius:10px;
       white-space:normal;word-break:break-word;text-align:left;max-width:100%;
@@ -1896,6 +1900,7 @@
         <div class="led"><i></i><span id="head-state">链路正常</span></div>
       </div>
       <div class="messages" id="messages"></div>
+      <div class="chipbar"><span class="chip-count" id="chip-count">可提问 4 / 20</span></div>
       <div class="chips" id="chips"></div>
       <form class="composer" id="form" autocomplete="off">
         <input id="input" type="text" placeholder="向 HAL 9000 发送指令…" aria-label="输入指令">
@@ -1988,7 +1993,7 @@ if (FAST) state.voiceOn = false;
 
 const el = {
   unit: $('#unit'), messages: $('#messages'), input: $('#input'), form: $('#form'),
-  loglines: $('#loglines'), chips: $('#chips'), mic: $('#mic'), toast: $('#toast'),
+  loglines: $('#loglines'), chips: $('#chips'), chipCount: $('#chip-count'), mic: $('#mic'), toast: $('#toast'),
   headState: $('#head-state'), boot: $('#boot'), bootlog: $('#bootlog'),
   sState: $('#s-state'), sDoor: $('#s-door'), sLink: $('#s-link'), sMission: $('#s-mission'),
   bLogic: $('#b-logic'), bMem: $('#b-mem'), bOpt: $('#b-opt'),
@@ -3498,7 +3503,11 @@ const I18N_FRAG = [
   ["（执行力评估）本局你走了 ", "(EXECUTION ASSESSMENT) You made "],
   [" 次，后撤 ", " checks, "],
   [" 步。风格：", " retreats. Style: "],
-  ["HAL 主动发言 ", "HAL speaks unprompted "]
+  ["HAL 主动发言 ", "HAL speaks unprompted "],
+  /* —— 提问 chips 分阶段解锁（chip-gating 追加）—— */
+  ["新的提问已解锁", "New questions unlocked"],
+  ["可提问 ", "Available "],
+  [" · 已问完", " · all asked"]
 ];
 
 const I18N_TITLE_EN = 'HAL 9000 · Communication Terminal';
@@ -4196,6 +4205,8 @@ const G = {
   objective: '等待链路建立…',
   done: false,
   flags: {
+    ae35: false,         // 阶段①：HAL 的 AE-35 失效报告已经发出（runStory 第一幕）
+    earthRead: false,    // 阶段③：01 屏的地球来信已经读过（Pacing.readEarth）
     dataSilent: false,   // 指出 AE-35 预测无数据支撑
     deceived: false,     // 相信了 HAL 的假预测
     cipher: false,       // 破译下行链路
@@ -4247,6 +4258,7 @@ function addClue(code, label) {
     ? G.clues.length + (G.clues.length === 1 ? ' entry' : ' entries')
     : G.clues.length + ' 条';
   Sound.blip(2400, .05, .05);
+  updateLeadChips();               // 线索可能推进解锁阶段（AE-35 / 9088 / 悖论 …）
 }
 
 function setTrust(delta, reason) {
@@ -4702,6 +4714,7 @@ function chessInto(host, opts) {
     addClue('CHESS', '棋局行为评估已完成');
     addClue('CHESS_ASSESS', '执行力评估已完成');
     G.flags.chessAssessed = true;
+    updateLeadChips();      // 阶段②解锁：自由对局下完一局，执行力评估已给出
     G.chessObs = { moves: obs.moves, caps: obs.caps, pawns: obs.pawns, checks: obs.checks, retreats: obs.retreats };
     G.chessStyle = aggressive ? 'aggressive' : (passive ? 'passive' : 'balanced');
     if (aggressive) setTrust(4, '执行力评估：主动');
@@ -5926,6 +5939,7 @@ async function runStory() {
   await halSay(L('I have run the prediction seven times. I am certain of it.',
                  '这个预测我运行了七次。我对此确信不疑。'));
   if (G.done) return;
+  G.flags.ae35 = true;                // 阶段①解锁信号：AE-35 失效报告已经发出
   addClue('AE35', 'AE-35 失效预测');
 
   let pick = await telemetryCard();
@@ -6529,6 +6543,28 @@ const LEADS = [
   },
 ];
 
+/* ---------------------------------------------------------------------------
+   chips 分阶段解锁（chip-gating）
+   未解锁的提问直接不渲染 —— 灰色占位等于告诉玩家「还有什么」，那本身就是剧透。
+   阶段只由真实剧情状态推进，不用任何计时器。
+   ------------------------------------------------------------------------ */
+const LEAD_STAGE = {
+  /* 0 · 开局即可问 */
+  fault: 0, comms: 0, crew: 0, origin_9000: 0,
+  /* 1 · AE-35 失效报告发出之后 */
+  error: 1, moon_signal: 1, pod_records: 1, mission: 1,
+  /* 2 · 自由对局下完一局（执行力评估完成）之后 */
+  frank_birthday: 2, trust: 2, dream: 2, crew_wills: 2,
+  /* 3 · 读过 01 屏地球来信之后 */
+  earth_msg: 3, president: 3, directorate: 3, earth: 3,
+  /* 4 · 拿到 9088 号文件 / 打破逻辑闭环之后 */
+  born: 4, afraid: 4, tma2: 4, object_approach: 4,
+};
+LEADS.forEach(L2 => {
+  L2.stage = Object.prototype.hasOwnProperty.call(LEAD_STAGE, L2.id) ? LEAD_STAGE[L2.id] : 0;
+});
+const LEAD_TOTAL = LEADS.length;                  // 20
+
 const askedLeads = new Set();
 const opened = { cipher: false };     // 哪些调查方向已经被打开
 let openCipherSoon = false;           // 玩家主动问起下行链路时，提前放行解密关卡
@@ -6556,11 +6592,42 @@ async function askLead(id) {
   return true;
 }
 
-/* 线索按钮：问过的会灭掉，避免重复 */
+/* 当前解锁阶段：只看真实剧情状态（旗标 / 已问线索），不用计时器。
+   ① G.flags.ae35            —— HAL 发出 AE-35 失效报告（runStory 第一幕）
+   ② G.flags.chessAssessed   —— 自由对局下完一局，执行力评估已给出（chessInto.assess）
+   ③ G.flags.earthRead 或 askedLeads['earth_msg'] —— 01 屏地球来信已读过
+   ④ G.flags.file 或 G.flags.paradox —— 拿到 9088 号文件 / 打破逻辑闭环
+   ※ 自由对局重开（FreeSession / newFreeGame）不会回退阶段：旗标只增不减。 */
+function currentLeadStage() {
+  let s = 0;
+  if (G.flags.ae35) s = 1;
+  if (G.flags.chessAssessed) s = Math.max(s, 2);
+  if (G.flags.earthRead || askedLeads.has('earth_msg')) s = Math.max(s, 3);
+  if (G.flags.file || G.flags.paradox) s = Math.max(s, 4);
+  return s;
+}
+
+/* 解锁提示：同一次解锁只提示一次（首次渲染是开局，不算解锁） */
+let chipStageShown = -1;
+function announceChipStage(stage) {
+  if (chipStageShown < 0) { chipStageShown = stage; return; }   // 开局静默
+  if (stage <= chipStageShown) return;
+  chipStageShown = stage;
+  const open = LEADS.filter(L2 => L2.stage <= stage).length;
+  const msg = '新的提问已解锁 · 可提问 ' + open + ' / ' + LEAD_TOTAL;
+  sysLog('<b>' + msg + '</b>');
+  addMsg('sys', msg);
+  toast(msg);
+  Sound.blip(1500, .06, .06);
+}
+
+/* 线索按钮：未解锁的阶段直接不渲染（灰掉等于剧透「还有什么」）；问过的会灭掉 */
 function buildChips() {
   const box = el.chips;
+  const stage = currentLeadStage();
   box.innerHTML = '';
   LEADS.forEach(L2 => {
+    if (L2.stage > stage) return;                 // ← 未解锁：不渲染，也不留占位
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'chip' + (askedLeads.has(L2.id) ? ' done' : '');
@@ -6570,6 +6637,9 @@ function buildChips() {
     box.appendChild(b);
   });
   box.scrollTop = 0;                   // 输入框下线后 chips 是唯一入口：始终从头可见
+  /* 动作 chip：不含任何尚未发生的剧情词，不构成剧透 —— 始终渲染。
+     玩家可以立刻问「打开舱门」，然后被 HAL 拒绝：一次选择产生一个结果，
+     比把它锁到后期更有信息量（与 ally 选项同一条原则）。 */
   const extra = ['唱首歌', '打开舱门', '现在几点'];
   extra.forEach(c => {
     const b = document.createElement('button');
@@ -6577,6 +6647,14 @@ function buildChips() {
     b.onclick = () => { Sound.blip(1900, .03, .045); send(T(c)); };
     box.appendChild(b);
   });
+  /* 进度计数（只数 LEADS，不含动作 chip）：让玩家知道还有内容没挖出来 */
+  const open = LEADS.filter(L2 => L2.stage <= stage).length;
+  const askedOpen = LEADS.filter(L2 => L2.stage <= stage && askedLeads.has(L2.id)).length;
+  if (el.chipCount) {
+    el.chipCount.textContent = '可提问 ' + open + ' / ' + LEAD_TOTAL
+      + (askedOpen >= open ? ' · 已问完' : '');
+  }
+  announceChipStage(stage);
 }
 function updateLeadChips() { buildChips(); }
 
@@ -6828,11 +6906,13 @@ const Pacing = (() => {
   function readEarth() {
     if (earth.read) return;
     earth.read = true; earth.pending = false;
+    G.flags.earthRead = true;            // 阶段③解锁信号：01 屏地球来信已经读过
     closePop();
     highlightClear('p01');
     /* 与已有 earth_msg 线索共用同一条入口：走同一段台词、同一条线索记录 */
     if (!askedLeads.has('earth_msg')) askLead('earth_msg').catch(e => console.error(e));
     else showEarthLetter(PanelView.current());
+    updateLeadChips();                   // 阶段③解锁：来信念完立刻反映到 chips
   }
 
   /* 结局 / HAL 终止时，把还挂着的计时器、高亮、弹窗全部收干净 */
