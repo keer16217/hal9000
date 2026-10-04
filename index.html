@@ -3328,7 +3328,7 @@ const I18N = {
   "等待 HAL 安排下一步": "WAITING FOR HAL TO SET THE PACE",
   "HAL 自主模式：等待乘员确认 08 号屏": "HAL AUTONOMOUS MODE: WAITING FOR CREW TO ACKNOWLEDGE SCREEN 08",
   "HAL 自主模式结束 · 进入任务通报": "AUTONOMOUS MODE ENDED · RESUMING MISSION REPORT",
-  "有人在看这块屏 —— 你决定什么时候点开。": "Something is watching this screen. You decide when to open it.",
+  "看向这块屏幕 —— 你决定什么时候点开。": "Look at this screen. You decide when to open it.",
   "地球有一段东西在等你。": "Something from Earth is waiting for you.",
   "残局研究已经摆好 —— 什么时候看，你决定。": "The studies are laid out. You decide when to look.",
   "HAL 请你确认 08 号屏": "HAL is asking you to acknowledge screen 08",
@@ -6768,7 +6768,7 @@ const Pacing = (() => {
     guidedPending = true;
     setObjective('等待 HAL 安排下一步');
     sysLog('HAL 自主模式：等待乘员确认 08 号屏');
-    const h = highlightPanel('p08', '⚠ ATTENTION! CHECK THIS SCREEN', '有人在看这块屏 —— 你决定什么时候点开。');
+    const h = highlightPanel('p08', '⚠ ATTENTION! CHECK THIS SCREEN', '看向这块屏幕 —— 你决定什么时候点开。');
     if (h) watch('p08', h);
     /* HAL 不催；但如果一直没人动，他自己会往下走（HAL 安排节奏，不是程序催） */
     after(28000, () => {
