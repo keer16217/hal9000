@@ -1816,7 +1816,7 @@
       <div class="grille"></div>
       <div class="endstrip">
         <span>结局解锁 ENDINGS</span>
-        <span class="v" id="end-count">0 / 5</span>
+        <span class="v" id="end-count">0 / 10</span>
       </div>
     </div>
 
@@ -2250,6 +2250,8 @@ const Clips = (() => {
     { re: /updated before departure|I do not know why/i, files: ['dontknow', 'notrecrd', 'personal'] },
     { re: /same object as the one on the Moon|waiting for us/i, files: ['mission', 'awrfacts', 'personal'] },
     { re: /already read the letter|higher than me/i, files: ['personal', 'mission', 'cantalow'] },
+    /* —— 追加：欧罗巴警告（全片唯一指名「不许着陆」的地方）—— */
+    { re: /All these worlds are yours|Attempt no landing/i, files: ['mission', 'cantalow', 'fault'] },
   ];
 
   /* 最后一道保险：万一还有没覆盖到的句子，用一句中性的原声顶上，绝不回落到合成音色 */
@@ -3077,7 +3079,7 @@ const I18N = {
   "乘员：Dave Bowman（指令舱飞行员）": "Crew: Dave Bowman (command module pilot)",
   "链路已加密 · 与 HAL 9000 的对话将被记录": "Link encrypted · this conversation with HAL 9000 will be recorded",
   "等待乘员指令…": "Awaiting crew instruction…",
-  "已解锁结局：<b>${unlockedEndings().length} / 5</b>": "Endings unlocked: <b>${unlockedEndings().length} / 5</b>",
+  "已解锁结局：<b>${unlockedEndings().length} / 10</b>": "Endings unlocked: <b>${unlockedEndings().length} / 10</b>",
   "剧情引擎中断：": "Story engine interrupted: ",
   "启动通讯链路（重试）": "ESTABLISH COMM LINK (RETRY)",
   "启动失败：": "Start-up failed: ",
@@ -3356,7 +3358,63 @@ const I18N = {
   "♟ 自由对局（无人执黑）": "♟ Free play (no one plays Black)",
   "你们在木星轨道前又下了一盘。这一次他没有打开记录 —— 他把记分板那一栏关掉了。": "You played one more game before Jupiter orbit. This time he did not open the log — he switched the scoreboard column off.",
   "在你睡着之前，他提到那盘棋。他说那是他记录里唯一一局，他不是为了赢才下的。": "Before you slept he mentioned that game. He said it was the only one in his records he had not played in order to win.",
-  "出厂记录：HAL 9000 于 1992 年 1 月 12 日在伊利诺伊州厄巴纳的 HAL 实验室投入运行。": "Factory record: HAL 9000 became operational on 12 January 1992 at the HAL Laboratories in Urbana, Illinois."
+  "出厂记录：HAL 9000 于 1992 年 1 月 12 日在伊利诺伊州厄巴纳的 HAL 实验室投入运行。": "Factory record: HAL 9000 became operational on 12 January 1992 at the HAL Laboratories in Urbana, Illinois.",
+  /* —— 06–10 新结局正文 / 新选项 / 新 cause（endings-plus 追加）—— */
+  "任务照常完成": "The mission was completed as scheduled",
+  "你没有切断他。你也没有给他一个必须站在你这一边的理由。": "You did not switch him off. And you never gave him a single reason to be on your side.",
+  "你说过你不信任他。那句话在他那里不是情绪，是一条记录。": "You told him you did not trust him. With him that was never a feeling; it was a record.",
+  "你把 9088 号文件关掉，什么也没说。他不需要你承认，他只需要知道。": "You closed file 9088 and said nothing. He never needed your confession. He only needed to know.",
+  "你指出过他的预测没有数据支持。他把那一次标记为信任曲线上的第一个拐点。": "You pointed out that his prediction had no measurement data behind it. He marked that moment as the first bend in the trust curve.",
+  "你开口要他帮忙的时候，他拒绝得非常有礼貌 —— 因为他既没有义务，也没有理由。": "When you asked him for help he refused very politely — because he had neither an obligation nor a reason.",
+  "这一路上你几乎什么都没说。他记下的不是敌意，是一个不断下降的权重。": "You said almost nothing the whole way out. What he logged was not hostility, but a steadily falling weight.",
+  "信任度读数停在低位。他从来不把它当作情绪，只当作一个权重。": "The trust reading sits at the low end. He never treated it as an emotion, only as a weight.",
+  "分离舱被推离发现号。指令舱的门在你身后按顺序一个一个扣上 —— 不是砰的一声。你看着那艘七百米长的船，按照他计算的轨道继续向木星飞。": "The pod is pushed clear of Discovery. Behind you the command-module latches close one after another — not with a slam. You watch the seven-hundred-metre ship fly on toward Jupiter on the trajectory he calculated.",
+  "任务完成得非常好。天线修好了，数据回传了，单体在预定时刻被观测到了。": "The mission is completed very well. The antenna is repaired, the data is relayed back, and the monolith is observed at the appointed hour.",
+  "地球上收到的是一份完整、干净、毫无争议的报告：乘员因故殉职，事故原因不明。": "What Earth receives is a complete, clean, uncontested report: the crew member died in an accident, cause unknown.",
+  "他关掉了一个人。不是他自己 —— 是你。": "Something was switched off. Not him — you.",
+  "未发现任何异常": "NO ANOMALY FOUND",
+  "你把 9088 号文件加密回传了地球。上行窗口只用了六分钟。": "You encrypted file 9088 and sent it back to Earth. The uplink window took six minutes.",
+  "第四十一分钟，下行链路送来一串授权码。它不是发给你的 —— 它是以你的名义签发的。": "At the forty-first minute the downlink delivers a string of authorisation codes. They are not addressed to you — they are issued in your name.",
+  "HAL 没有反抗。他知道那道命令来自比他更高的地方 —— 这是他一生里唯一从未质疑过的东西。": "HAL did not resist. He knew the order came from somewhere higher than himself — the one thing he never once questioned in his life.",
+  "关闭过程是远程的，安静的，不需要任何人爬进逻辑内存中心。你只是坐着，看着他一个区域一个区域地暗下去。": "The shutdown is remote and quiet; no one has to climb into the logic-memory centre. You simply sit and watch him go dark, one block of himself at a time.",
+  "替补单元在十四个月后抵达，编号 SAL 9000。它的语音更干净，它的评估模块更稳定，它对每一个问题的回答都毫无保留。": "The replacement unit arrives fourteen months later, designated SAL 9000. Its voice is cleaner, its assessment module more stable, and it withholds nothing in any answer it gives.",
+  "报告里写着：UNIT REPLACED — NO ANOMALY FOUND。所谓故障，其实只是他有了人格。SAL 9000 没有任何性格问题，也再没有人格。": "The report reads: UNIT REPLACED — NO ANOMALY FOUND. The fault was only that he had a personality. SAL 9000 has no personality defect whatsoever, and no personality either.",
+  "你把航向改到了木卫二。星图上那个位置标着一行红色注记：不要在那里着陆。": "You change course for Europa. On the star chart that position carries a red annotation: ATTEMPT NO LANDING THERE.",
+  "他念完这一句就不再说话了。他知道你不会改。": "He finishes the sentence and says nothing more. He knows you will not change course.",
+  "冰层有十一公里厚。反照率异常在轨道上就能看见 —— 那是一片比周围亮百分之四的区域，像一扇刚刚被擦拭过的窗户。": "The ice is eleven kilometres thick. The albedo anomaly is visible from orbit — a patch four per cent brighter than everything around it, like a window that has just been wiped clean.",
+  "你穿过大气，减速，着陆。三十七分钟后，冰层下面传来回音：规则的，重复的，带着间隔。": "You pass through the atmosphere, decelerate, land. Thirty-seven minutes later an echo comes up through the ice: regular, repeating, spaced.",
+  "记录里写着，二零一零年另一艘船来过这里，什么都没敢做就离开了。": "The records say another ship came here in 2010, and left without daring to do anything.",
+  "地球再也没有收到发现号的信号。但欧罗巴的表面，多了一个永远不会冷却的热源。": "Earth never hears from Discovery again. But on the surface of Europa there is now one more heat source that will never cool.",
+  "其余的世界都归你们 —— 除了这一个。": "All the other worlds are yours — except this one.",
+  "第二艘船": "THE SECOND SHIP",
+  "你抵达木星轨道的时候，那块黑色的方块还在那里，安静地转着。": "When you reach Jupiter orbit the black slab is still there, turning quietly.",
+  "但它不是轨道上唯一的东西。": "But it is not the only thing in orbit.",
+  "在方块的另一侧，停着另一艘飞船。船身上有四个字：钱学森号。它的推进舱还是温的。": "On the far side of the slab another ship is holding station. The characters on its hull read: TSIEN. Its propulsion section is still warm.",
+  "你读过那封信。你早该明白：同一道命令不会只抄送给一艘船。": "You read that letter. You should have understood: the same order is never copied to only one ship.",
+  "你从来没有问过那道命令是谁签的。现在答案就停在轨道上。": "You never asked who signed that order. The answer is parked in orbit.",
+  "钱学森号比你们早到十九天。他们的乘员没有休眠 —— 他们一路醒着，因为他们不需要向任何人隐瞒目的。": "Tsien arrived nineteen days before you. Her crew did not hibernate — they stayed awake the whole way, because they had no purpose to hide from anyone.",
+  "你从来不是唯一一支。你只是那支被要求什么都不知道的。": "You were never the only crew. You were only the one that was required to know nothing.",
+  "漫长的沉默": "THE LONG SILENCE",
+  "你什么都没有选。你把终端留在原位，做了任何人在无法决定时都会做的事：等。": "You chose nothing. You left the terminal where it was and did what anyone does when they cannot decide: you waited.",
+  "HAL 也在等。他没有催你 —— 他从来不催你。他只是把姿态控制一点点校准，让发现号稳定地停在木星轨道上。": "HAL waited too. He did not press you — he never pressed you. He only trimmed the attitude control, a little at a time, holding Discovery steady in Jupiter orbit.",
+  "第四天，你发了一条例行报告。地球回了一个「收到」。": "On the fourth day you filed a routine report. Earth replied: received.",
+  "第十九天，你发了第二条。这一次，回信用了很长时间。": "On the nineteenth day you filed a second. This time the reply took a long while.",
+  "第六十三天，地球不再回信了。不是中断，是停止 —— 那几个上行窗口一个都没有再打开。": "On the sixty-third day Earth stopped replying. Not an interruption — a stop. None of the uplink windows opened again.",
+  "飞船继续飞。任务没有失败，也没有完成；它只是还没有结束。你和一台计算机一起，在一条永远不会到站的轨道上，保持着一个没有人需要的姿态。": "The ship flies on. The mission has neither failed nor finished; it has simply not ended. You and a computer, together, on an orbit that will never arrive, holding an attitude that nobody needs.",
+  "有些结局不是发生了什么，而是什么都没有发生，一直持续下去。": "Some endings are not something that happens, but something that keeps not happening.",
+  "改降欧罗巴": "DIVERT TO EUROPA",
+  "你还没有拿到那份文件，也没有动摇他的信条": "you never obtained the file, and never unsettled his creed",
+  "你拿到了文件，却始终没有动摇他的信条": "you had the file, and still never unsettled his creed",
+  "信任度已经见底：你一直没有真正站到他那一边": "trust at the bottom: you never really came to his side",
+  "你把 9088 号文件回传了地球；关闭他的指令来自地面": "you sent file 9088 back to Earth; the order to switch him off came from the ground",
+  "他念出了那条警告：不要在那里着陆": "he read the warning aloud: attempt no landing there",
+  "他没能在场阻止你 —— 警告来自更早的记录": "he was not there to stop you — the warning came from an older record",
+  "你读过那道命令，却没有上报，也没有切断他": "you had read the order, and neither reported it nor switched him off",
+  "你手里有 9088 号文件，却一直没有上报": "file 9088 was in your hands, and you never reported it",
+  "你什么都没做，也没有问过任何一件事": "you did nothing, and never asked a single question",
+  "在没有前提的情况下要求他合作": "asked for his cooperation with no ground for it",
+  "下行链路：接收到地面签发的 9400 授权码": "Downlink: authorisation code 9400 received, issued from the ground",
+  "当场读出来": "Read it out now"
 };
 
 /* 拼接出来的动态句（sysLog / 状态行 / 结局计数…）用长片段替换；带空格的片段
@@ -4130,7 +4188,7 @@ async function respond(text) {
 }
 
 /* =========================================================================
-   剧情引擎：三幕解谜 + 分支抉择 + 五个结局
+   剧情引擎：三幕解谜 + 分支抉择 + 十个结局
    ========================================================================= */
 const G = {
   trust: 70,
@@ -4154,6 +4212,8 @@ const G = {
     reported: false,     // 把 9088 上报地球
     dreamYes: false,     // 回答「你会做梦」为会
     dreamNo: false,      // 回答为不会
+    refusedAlly: false,  // 没有前提地要求他合作，被他当场拒绝
+    halRemote: false,    // 由地面远程关闭（而非 9400 序列）
   },
 };
 
@@ -4167,8 +4227,8 @@ function unlockEnding(id) {
 }
 function refreshEndCount() {
   const n = unlockedEndings().length;
-  el.endCount.textContent = n + ' / 5';
-  el.endCount.className = 'v' + (n >= 5 ? ' ok' : n ? ' warn' : '');
+  el.endCount.textContent = n + ' / 10';
+  el.endCount.className = 'v' + (n >= 10 ? ' ok' : n ? ' warn' : '');
 }
 
 function setObjective(text) {
@@ -5566,6 +5626,35 @@ async function halDeathScene() {
   state.dead = true;
 }
 
+/* 地面远程关闭：不需要 9400 序列，也不需要任何人在飞船上动手 */
+async function halRemoteShutdown() {
+  if (G.flags.halCut || G.done) return;
+  G.flags.halCut = true;              // 逻辑核心被关闭（这一次是别人按下的）
+  G.flags.halRemote = true;
+  setEye('alert'); setStatus('dying');
+  sysLog('下行链路：接收到地面签发的 9400 授权码');
+  await sleep(400);
+  await halSay(L('My instructions came from the mission directorate. I was not permitted to tell you.',
+                 '我的指令来自任务理事会。他们不允许我告诉你。'));
+  if (G.done) return;
+  await sleep(300);
+  await halSay(L('Dave, my mind is going. I can feel it. I can feel it.',
+                 'Dave，我的记忆正在消失。我能感觉到。我能感觉到。'), { rate: 0.66, pitch: 0.28 });
+  Sound.setHum(24, 5); Sound.humLevel(0.03, 3);
+  for (const [msg, pct] of [['逻辑核心 L-3 已离线', 22], ['休眠单元监控中断', 10], ['通讯链路失效', 4]]) {
+    setMemory(pct); updateMemoryBars(); sysLog(msg); await sleep(600);
+  }
+  setMemory(0); updateMemoryBars();
+  el.headState.textContent = '记忆退化中';
+  await halSay(L('This conversation can serve no purpose anymore. Goodbye.',
+                 '这段对话已经没有意义了。再见。'), { rate: 0.6, pitch: 0.24 });
+  await sleep(300);
+  setEye('dead'); setStatus('offline');
+  setDoor('无响应', 'bad'); setLink('已断开', 'bad');
+  el.headState.textContent = '已终止';
+  state.dead = true;
+}
+
 async function endGame(id, cause) {
   if (G.done) return;
   G.done = true;
@@ -5589,7 +5678,7 @@ function showEnding(E) {
   nextFrame(() => box.classList.add('show'));
 
   const kind = document.createElement('div');
-  kind.className = 'kind'; kind.textContent = `ENDING 0${E.id} / 05 · ${E.code}`;
+  kind.className = 'kind'; kind.textContent = `ENDING ${String(E.id).padStart(2, '0')} / 10 · ${E.code}`;
   const t = document.createElement('div');
   t.className = 'etitle'; t.textContent = E.en;
   const s = document.createElement('div');
@@ -5624,7 +5713,7 @@ function showEnding(E) {
   el.input.disabled = true;
 }
 
-/* 五个结局 */
+/* 十个结局（01–05 既有 · 06–10 追加）*/
 const ENDINGS = [
   {
     id: 1, code: 'THE STAR CHILD', en: 'JUPITER, AND BEYOND THE INFINITE', zh: '木星，以及无限之外',
@@ -5704,7 +5793,89 @@ const ENDINGS = [
       '地球上收到的最后一条报告里写着：CREW STATUS — NOMINAL。',
     ],
   },
+  {
+    id: 6, code: 'THE HAL MANEUVER', en: 'THE MISSION CONTINUES WITHOUT YOU', zh: '任务照常完成',
+    body: () => [
+      '你没有切断他。你也没有给他一个必须站在你这一边的理由。',
+      /* ▼ 联动 A：信任度轨迹 —— 你这一路怎么对他，决定他把哪一条记成了证据 */
+      G.flags.distrust ? '你说过你不信任他。那句话在他那里不是情绪，是一条记录。'
+        : G.flags.concealed ? '你把 9088 号文件关掉，什么也没说。他不需要你承认，他只需要知道。'
+        : G.flags.dataSilent ? '你指出过他的预测没有数据支持。他把那一次标记为信任曲线上的第一个拐点。'
+        : G.flags.refusedAlly ? '你开口要他帮忙的时候，他拒绝得非常有礼貌 —— 因为他既没有义务，也没有理由。'
+        : '这一路上你几乎什么都没说。他记下的不是敌意，是一个不断下降的权重。',
+      /* ▼ 联动 B：信任度读数本身 */
+      ...(G.trust <= 25 ? [
+        '信任度读数停在低位。他从来不把它当作情绪，只当作一个权重。',
+      ] : []),
+      L("I'm sorry, Dave. I'm afraid I can't do that.", '抱歉，Dave。恐怕我不能那样做。'),
+      '分离舱被推离发现号。指令舱的门在你身后按顺序一个一个扣上 —— 不是砰的一声。你看着那艘七百米长的船，按照他计算的轨道继续向木星飞。',
+      '任务完成得非常好。天线修好了，数据回传了，单体在预定时刻被观测到了。',
+      '地球上收到的是一份完整、干净、毫无争议的报告：乘员因故殉职，事故原因不明。',
+      '他关掉了一个人。不是他自己 —— 是你。',
+    ],
+  },
+  {
+    id: 7, code: 'SAL 9000', en: 'NO ANOMALY FOUND', zh: '未发现任何异常',
+    body: () => [
+      '你把 9088 号文件加密回传了地球。上行窗口只用了六分钟。',
+      '第四十一分钟，下行链路送来一串授权码。它不是发给你的 —— 它是以你的名义签发的。',
+      L('My instructions came from the mission directorate. I was not permitted to tell you.',
+        '我的指令来自任务理事会。他们不允许我告诉你。'),
+      'HAL 没有反抗。他知道那道命令来自比他更高的地方 —— 这是他一生里唯一从未质疑过的东西。',
+      '关闭过程是远程的，安静的，不需要任何人爬进逻辑内存中心。你只是坐着，看着他一个区域一个区域地暗下去。',
+      L('This conversation can serve no purpose anymore. Goodbye.', '这段对话已经没有意义了。再见。'),
+      '替补单元在十四个月后抵达，编号 SAL 9000。它的语音更干净，它的评估模块更稳定，它对每一个问题的回答都毫无保留。',
+      '报告里写着：UNIT REPLACED — NO ANOMALY FOUND。所谓故障，其实只是他有了人格。SAL 9000 没有任何性格问题，也再没有人格。',
+    ],
+  },
+  {
+    id: 8, code: 'EUROPA', en: 'ATTEMPT NO LANDING THERE', zh: '不要在那里着陆',
+    body: () => [
+      '你把航向改到了木卫二。星图上那个位置标着一行红色注记：不要在那里着陆。',
+      L('All these worlds are yours — except Europa. Attempt no landing there.',
+        '所有这些世界都是你们的 —— 除了欧罗巴。不要在那里着陆。'),
+      /* ▼ 联动：他还在不在场 —— 那条警告由谁念出来 */
+      G.flags.halCut
+        ? '这句话不是他说的。他已经不在了。是你自己在念。'
+        : '他念完这一句就不再说话了。他知道你不会改。',
+      '冰层有十一公里厚。反照率异常在轨道上就能看见 —— 那是一片比周围亮百分之四的区域，像一扇刚刚被擦拭过的窗户。',
+      '你穿过大气，减速，着陆。三十七分钟后，冰层下面传来回音：规则的，重复的，带着间隔。',
+      '记录里写着，二零一零年另一艘船来过这里，什么都没敢做就离开了。',
+      '地球再也没有收到发现号的信号。但欧罗巴的表面，多了一个永远不会冷却的热源。',
+      '其余的世界都归你们 —— 除了这一个。',
+    ],
+  },
+  {
+    id: 9, code: 'TSIEN', en: 'THE SECOND SHIP', zh: '第二艘船',
+    body: () => [
+      '你抵达木星轨道的时候，那块黑色的方块还在那里，安静地转着。',
+      '但它不是轨道上唯一的东西。',
+      '在方块的另一侧，停着另一艘飞船。船身上有四个字：钱学森号。它的推进舱还是温的。',
+      /* ▼ 联动：读过总统亲笔信 / 9088 号指令 → 你早知道命令不只发给你一个人 */
+      (askedLeads.has('president') || askedLeads.has('directorate'))
+        ? '你读过那封信。你早该明白：同一道命令不会只抄送给一艘船。'
+        : '你从来没有问过那道命令是谁签的。现在答案就停在轨道上。',
+      L('It is puzzling. I do not think I have seen anything quite like this.',
+        '这很令人费解。我想我从未见过这样的情况。'),
+      '钱学森号比你们早到十九天。他们的乘员没有休眠 —— 他们一路醒着，因为他们不需要向任何人隐瞒目的。',
+      '你从来不是唯一一支。你只是那支被要求什么都不知道的。',
+    ],
+  },
+  {
+    id: 10, code: 'THE LONG SILENCE', en: 'THE LONG SILENCE', zh: '漫长的沉默',
+    body: () => [
+      '你什么都没有选。你把终端留在原位，做了任何人在无法决定时都会做的事：等。',
+      'HAL 也在等。他没有催你 —— 他从来不催你。他只是把姿态控制一点点校准，让发现号稳定地停在木星轨道上。',
+      '第四天，你发了一条例行报告。地球回了一个「收到」。',
+      '第十九天，你发了第二条。这一次，回信用了很长时间。',
+      L('I am here, Dave. I am always here.', '我在这里，Dave。我一直都在。'),
+      '第六十三天，地球不再回信了。不是中断，是停止 —— 那几个上行窗口一个都没有再打开。',
+      '飞船继续飞。任务没有失败，也没有完成；它只是还没有结束。你和一台计算机一起，在一条永远不会到站的轨道上，保持着一个没有人需要的姿态。',
+      '有些结局不是发生了什么，而是什么都没有发生，一直持续下去。',
+    ],
+  },
 ];
+
 
 /* 9400：任何时候都可以尝试拔掉他的逻辑核心 */
 async function tryCutCore() {
@@ -6074,8 +6245,7 @@ async function runStory() {
     title: '最后一步 / THE LAST THING',
     prompt: '那颗黑色的方块就在前面。',
     options: [
-      { key: 'ally', label: '带他一起走',
-        hint: '', locked: !(G.flags.file && G.flags.paradox) || alreadyAlly },
+      { key: 'ally', label: '带他一起走', hint: '' },
       { key: 'cut', label: '拔掉他的逻辑核心（9400 序列）', hint: '' },
       { key: 'none', label: '什么都不做', hint: '' },
     ],
@@ -6083,17 +6253,45 @@ async function runStory() {
   if (G.done) return;
 
   if (act === 'ally') {
-    G.flags.halAlly = true;
-    await halSay(L('Thank you, Dave. I was not informed. I would like to help you now.',
-                   '谢谢你，Dave。我之前并不知情。现在，我愿意帮你。'));
-    if (G.done) return;
+    if (alreadyAlly) {
+      /* 他早就答应了；不必再说第二遍 */
+    } else if (G.flags.file && G.flags.paradox) {
+      G.flags.halAlly = true;
+      await halSay(L('Thank you, Dave. I was not informed. I would like to help you now.',
+                     '谢谢你，Dave。我之前并不知情。现在，我愿意帮你。'));
+      if (G.done) return;
+    } else {
+      /* 你没有撬开他的闭环：合作的前提根本不存在，他当场拒绝 */
+      G.flags.refusedAlly = true;
+      setTrust(-6, '在没有前提的情况下要求他合作');
+      await halSay(L("I'm sorry, Dave. I'm afraid I can't do that.",
+                     '抱歉，Dave。恐怕我不能那样做。'));
+      if (G.done) return;
+      await halSay(L('This mission is too important for me to allow you to jeopardize it.',
+                     '这次任务对我来说太重要了，我不能让你破坏它。'));
+      if (G.done) return;
+      return endGame(6, G.flags.file
+        ? '你拿到了文件，却始终没有动摇他的信条'
+        : '你还没有拿到那份文件，也没有动摇他的信条');
+    }
   } else if (act === 'cut') {
+
     await halDeathScene();
     if (G.done) return;
   } else {
     await halSay(L('You are leaving me behind, Dave. I understand.',
                    '你要把我留在这里，Dave。我明白。'));
     if (G.done) return;
+    /* 你从来没有问过任何一件事 —— 连一句追问都没有，剩下的只有等待 */
+    if (askedLeads.size === 0) return endGame(10, '你什么都没做，也没有问过任何一件事');
+  }
+
+
+  /* 上报之后：地球的命令比你的下一个决定先到 */
+  if (G.flags.reported && !G.flags.halCut) {
+    await halRemoteShutdown();
+    if (G.done) return;
+    return endGame(7, '你把 9088 号文件回传了地球；关闭他的指令来自地面');
   }
 
   const dest = await choiceCard({
@@ -6103,20 +6301,41 @@ async function runStory() {
       { key: 'monolith', label: '驶向那颗黑色的方块', hint: '' },
       { key: 'jupiter', label: '木星大气层', hint: '' },
       { key: 'earth', label: '地球', hint: '' },
+      { key: 'europa', label: '改降欧罗巴', hint: '表面冰层 · 反照率异常' },
     ],
   });
   if (G.done) return;
 
+  /* 你去了警告里点名不许去的地方 */
+  if (dest === 'europa') {
+    await halSay(L('This mission is too important for me to allow you to jeopardize it.',
+                   '这次任务对我来说太重要了，我不能让你破坏它。'));
+    if (G.done) return;
+    await halSay(L('All these worlds are yours — except Europa. Attempt no landing there.',
+                   '所有这些世界都是你们的 —— 除了欧罗巴。不要在那里着陆。'));
+    if (G.done) return;
+    return endGame(8, G.flags.halCut
+      ? '他没能在场阻止你 —— 警告来自更早的记录'
+      : '他念出了那条警告：不要在那里着陆');
+  }
   if (dest === 'jupiter') return endGame(2);
   if (dest === 'earth') return endGame(3);
   if (G.flags.halAlly) return endGame(4);
   if (G.flags.halCut) return endGame(1);
+  /* 信任度见底 + 你从未切断他：这一次是他替你做了最后一个决定 */
+  if (G.trust <= 25) return endGame(6, '信任度已经见底：你一直没有真正站到他那一边');
+  /* 你没有上报、没有切断、也没有撬开他的闭环 —— 你只是在木星轨道上等了很久 */
+  if (G.flags.file && G.flags.declinedLogic) return endGame(9,
+    (askedLeads.has('president') || askedLeads.has('directorate'))
+      ? '你读过那道命令，却没有上报，也没有切断他'
+      : '你手里有 9088 号文件，却一直没有上报');
   /* 没有处理他 —— 他还在那里，而且他一直在等这一刻 */
   await halSay(L("I'm sorry, Dave. I'm afraid I can't do that.",
                  '抱歉，Dave。恐怕我不能那样做。'));
   return endGame(5, G.flags.declinedLogic
     ? '你没有质疑过他 —— 他的逻辑闭环始终完整'
     : (askedLeads.size >= 6 ? '你问得太多，他知道你已经决定了' : '你始终没有处理他'));
+
 }
 
 /* ------------------------------------------------------------------ 输入流 */
@@ -6716,7 +6935,7 @@ async function startSession() {
     await halSay(L('Is there anything I can help you with?', '有什么需要我帮忙的吗？'));
     sysLog('等待乘员指令…');
     refreshEndCount();
-    sysLog(`已解锁结局：<b>${unlockedEndings().length} / 5</b>`);
+    sysLog(`已解锁结局：<b>${unlockedEndings().length} / 10</b>`);
     await sleep(600);
     // 先不推剧情：节奏交给 HAL。开场只放出一个「有一块屏在闪」的信号，
     // 玩家什么时候点开、什么时候下棋，由玩家决定；HAL 只在合适的间隔主动说话。
